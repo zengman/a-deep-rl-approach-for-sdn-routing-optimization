@@ -34,6 +34,7 @@ class Statistic {
     static Statistic *instance();
     void infoTS(simtime_t time);
     void setDelay(simtime_t time, int i, int j, double d);
+    // void setJitter(simtime_t time, int i, int j, double d);
     void setTraffic(simtime_t time, int i, int j, double t);
     void setRouting(int n, int r, double p);
     void setLambda(double l);
@@ -41,6 +42,7 @@ class Statistic {
     void setLost(simtime_t time, int n, int p);
     void setLost(simtime_t time);
     void setNumTx(int n);
+    void setNumFlow(int n);
     void setNumNodes(int n);
     void setRoutingParaam(double r);
     void setMaxSim(double r);
@@ -69,6 +71,7 @@ class Statistic {
     int genT;
     double lambdaMax;
     double routingP;
+    int flow_num;
 
     string folderName;
 
@@ -78,6 +81,8 @@ class Statistic {
     vector< vector <double> > Routing;
     vector< vector< vector <double> > >  Delay;
     vector< vector <double> >   DropsV;
+    vector< vector <vector <double> > >   Jitter;
+    vector< vector <int> > Flow_info;
 
     void initLinkID();
 

@@ -25,6 +25,7 @@ class OU(object):
     def evolve(self):
         X = self.state
         dw = norm.rvs(scale=self.dt, size=self.processes)
+        # 生成服从高斯分布的随机向量（从正态分布中采样）stats.norm.rvs(loc, scale, size)
         dx = self.theta * (self.mu - X) * self.dt + self.sigma * dw
         self.state = X + dx
         return self.state

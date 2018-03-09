@@ -24,6 +24,7 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
     # SETUP STARTS HERE
     if train_indicator > 0:
         folder = setup_run(DDPG_config)
+        print('folder=', folder)
     elif train_indicator == 0:
         folder = DDPG_config['EXPERIMENT']
 
@@ -34,18 +35,22 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
     ACTIVE_NODES = DDPG_config['ACTIVE_NODES']
 
     # Generate an environment
+    # 需要在omnet/router中加入相应的内容，比如拓扑图networkAll.matrix等
     if DDPG_config['ENV'] == 'balancing':
         env = OmnetBalancerEnv(DDPG_config, folder)
     elif DDPG_config['ENV'] == 'label':
         env = OmnetLinkweightEnv(DDPG_config, folder)
 
     action_dim, state_dim = env.a_dim, env.s_dim
+    print('state_dim =',state_dim)
+    # action_dim = graph_number_of_edges
 
     MU = DDPG_config['MU']
     THETA = DDPG_config['THETA']
     SIGMA = DDPG_config['SIGMA']
 
     ou = OU(action_dim, MU, THETA, SIGMA)       #Ornstein-Uhlenbeck Process
+    # 数学上的一个随机过程
 
     BUFFER_SIZE = DDPG_config['BUFFER_SIZE']
     BATCH_SIZE = DDPG_config['BATCH_SIZE']
@@ -84,6 +89,7 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
         L2[k] = 0
 
     vector_to_file(ltm, folder + 'weightsL2' + 'Log.csv', 'w')
+    # 把ltm转化为String类型，写入weightsL2Log.csv文件中，作为行标题
 
     #Now load the weight
     try:
@@ -105,24 +111,42 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
 
         total_reward = 0
         for j in range(MAX_STEPS):
-            epsilon -= 1.0 / EXPLORE
-            a_t = np.zeros([1, action_dim])
+            print("step=:" + str(j))
+
+            epsilon -= 1.0 / EXPLORE  #init esplion = 1
+            a_t = np.zeros([1, action_dim]) # 1行,action_dim 列,元素为0
             noise_t = np.zeros([1, action_dim])
-
-            a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0]))
-
-            if train_indicator and epsilon > 0 and (step % 1000) // 100 != 9:
-                noise_t[0] = epsilon * ou.evolve()
+            print('action_dim',action_dim)
+            a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0])) # actornetwork.model
+            # add action = (weight, bandwidth)
+            print('s_t.shape[0]=',s_t.shape[0])
+            print('a_t_original=', a_t_original)
+            # return type = numpy array
+            # numpy.shape?? 多维=行数，一维=个数
+            # numpy.reshape(i,j) Gives a new shape to an array without changing its data. 数据不变，改变了行数列数
+            if train_indicator and epsilon > 0 and (step % 1000) // 100 != 9:  # init step = 0
+                noise_t[0] = epsilon * ou.evolve() # evolove() 高斯分布之类的数学过程
+                # train_indicator == 1 means train
 
             a = a_t_original[0]
             n = noise_t[0]
             a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
+            print('a=',a)
+            print('n=',n)
+            print('a_t[0]=',a_t[0])
+            # if 0<(a+n)<1, return a+n, else return a-n 
 
+            # numpy.clip(min,max) the elemnets who larger than max, will be replace by max, all elemnts between min and max
+            
             # execute action
-            s_t1, r_t, done = env.step(a_t[0])
+            s_t1, r_t, done = env.step(a_t[0])  # call omnet
+            print('after step self.env_T=')
+            print(env.env_T)
+            
+            # state, action, reward, new_state,done
 
             buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
-
+            # s_t initial state 
             scale = lambda x: x
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)
@@ -134,12 +158,15 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
 
             y_t = np.zeros([len(batch), action_dim])
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
-
+            # ???
+            # according to dones, init y_t
             for k in range(len(batch)):
                 if dones[k]:
                     y_t[k] = rewards[k]
                 else:
                     y_t[k] = rewards[k] + GAMMA*target_q_values[k]
+
+            # print('end batch for')
 
             if train_indicator and len(batch) >= BATCH_SIZE:
                 loss = critic.model.train_on_batch([states, actions], y_t)
@@ -154,6 +181,7 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
 
             total_reward += r_t
             s_t = s_t1
+            # print('begin layer')
 
             for layer in actor.model.layers + critic.model.layers:
                 if layer.name in layers_to_mind.keys():

@@ -52,6 +52,8 @@ def setup_run(DDPG_config):
     with open(folder + 'folder.ini', 'w') as ifile:
         ifile.write('[General]\n')
         ifile.write('**.folderName = "' + folder + '"\n')
+        flow_num = DDPG_config['FLOW_NUM']
+        ifile.write('**.flow_num = ' + str(flow_num) + '\n')
 
     with open(folder + 'DDPG.json', 'w') as jconfig:
         json.dump(OrderedDict(sorted(DDPG_config.items(), key=lambda t: t[0])), jconfig, indent=4)
@@ -147,6 +149,7 @@ def scale(array):
 
 
 def softmax(x):
+    '''np.exp(x) / np.sum(np.exp(x), axis=0)'''
     return np.exp(x) / np.sum(np.exp(x), axis=0)
 
 

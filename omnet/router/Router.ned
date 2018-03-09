@@ -21,6 +21,7 @@ module Router
         int numTx;
         int numNodes;
         int id;
+        
 
         @display("i=misc/node_vs,gold;bgb=224,246");
 
@@ -35,6 +36,7 @@ module Router
             numTx = numTx;
             numNodes = numNodes;
             id = id;
+            
         };
         queue[sizeof(port)]: NodeQueue;
 

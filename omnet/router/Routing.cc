@@ -33,6 +33,7 @@ void Routing::initialize()
     numTx = par("numTx");
     numNodes = par("numNodes");
     folderName = par("folderName").stdstringValue();
+    flow_num = par("flow_num");
 
     int diff = numNodes - numTx;
     getRoutingInfo(id-diff, outPort);

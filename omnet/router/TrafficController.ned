@@ -25,6 +25,7 @@ simple TrafficController
         int numNodes;
         int id;
         string folderName;
+        int flow_num;
 
     gates:
         output out[];

@@ -37,6 +37,7 @@ class TrafficController : public cSimpleModule
         int id;
         double flowRatio[100];
         string  folderName;
+        int flow_num;
 
     protected:
         virtual void initialize();

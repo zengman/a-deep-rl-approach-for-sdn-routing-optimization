@@ -21,7 +21,8 @@ module Server
         int numTx;
         int numNodes;
         int id;
-
+        int flow_num;
+       
         @display("i=misc/node_vs,gold;bgb=224,246");
 
 

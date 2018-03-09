@@ -37,7 +37,7 @@ class ActorNetwork(object):
 
         K.set_session(sess)
 
-        #Now create the model
+        # Now create the model
         self.model, self.weights, self.state = self.create_actor_network(state_size, action_size)
         self.target_model, self.target_weights, self.target_state = self.create_actor_network(state_size, action_size)
         self.action_gradient = tf.placeholder(tf.float32, [None, action_size])
@@ -60,10 +60,11 @@ class ActorNetwork(object):
         self.target_model.set_weights(actor_target_weights)
 
     def create_actor_network(self, state_size, action_dim):
-        S = Input(shape=[state_size], name='a_S')
+        S = Input(shape=[state_size], name='a_S') 
+        # indicates that the expected input will be batches of [state_size]-dimensional vectors.
         h0 = Dense(self.HIDDEN1_UNITS, activation=self.h_acti, init=glorot_normal, name='a_h0')(S)
         h1 = Dense(self.HIDDEN2_UNITS, activation=self.h_acti, init=glorot_normal, name='a_h1')(h0)
         # https://github.com/fchollet/keras/issues/374
         V = Dense(action_dim, activation=self.acti, init=glorot_normal, name='a_V')(h1)
         model = Model(input=S, output=V)
-        return model, model.trainable_weights, S
+        return model, model.trainable_weights, S # model, weights. state

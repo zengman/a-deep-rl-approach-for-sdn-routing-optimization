@@ -24,6 +24,8 @@ void TrafficController::initialize()
     nodeRatio = par("nodeRatio");
     numNodes = par("numNodes");
     folderName = par("folderName").stdstringValue();
+    flow_num = par("flow_num");
+
 
     int MODE = 3;
 
@@ -63,6 +65,7 @@ void TrafficController::initialize()
     else {
         // READED FROM FILE
         getTrafficInfo(id, flowRatio);
+
         for (int i = 0; i < numNodes; i++) {
             ControlPacket *data = new ControlPacket("trafficInfo");
             data->setData(flowRatio[i]);
@@ -81,25 +84,55 @@ void TrafficController::getTrafficInfo(int id, double rData[]) {
 
      string line;
      ifstream myfile (folderName + "/Traffic.txt");
-     double val;
 
+//     rData[100] = {0.0};
+     for(int i = 0; i < numNodes; i++){
+         rData[i]=0.0;
+     }
+     rData[id]=-1;
      if (myfile.is_open()) {
-         int i = 0;
-         while (id != i) {
-             for(int k = 0; k < numNodes; k++) {
-                 string aux;
-                 getline(myfile, aux, ',');
+         int cnt = 0;
+         while (cnt<flow_num ){
+             string aux;
+             getline(myfile, aux, ','); //flow_id
+             getline(myfile, aux, ','); //src
+             int val = stoi(aux);
+
+             if (val == id){
+                 getline(myfile, aux, ',');//dst
+                 int dst = stoi(aux);
+                 getline(myfile, aux, ',');//df
+                 double df = stod(aux);
+                 rData[dst]=df;
+                 cout<<"rData[] id="<<id<<"; id=dst:"<<stod(aux)<<endl;
+                 getline(myfile, aux, ',');//Df
+
              }
-             //myfile >> val;
-             i++;
+             else{
+                 for (int i = 0; i < 3; i++){
+                     string aux;
+                     getline(myfile, aux, ',');
+                 }
+             }
+
+             cnt++;
          }
 
-         for(int k = 0; k < numNodes; k++) {
-             string aux;
-             getline(myfile, aux, ',');
-             val = stod(aux);
-             rData[k] = val;
-         }
+//         while (id != i) {
+//             for(int k = 0; k < numNodes; k++) {
+//                 string aux;
+//                 getline(myfile, aux, ',');
+//             }
+//             //myfile >> val;
+//             i++;
+//         }
+//
+//         for(int k = 0; k < numNodes; k++) {
+//             string aux;
+//             getline(myfile, aux, ',');
+//             val = stod(aux);
+//             rData[k] = val;
+//         }
 
          myfile.close();
      }

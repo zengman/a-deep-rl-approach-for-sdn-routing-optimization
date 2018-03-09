@@ -104,13 +104,16 @@ void Application::handleMessage(cMessage *msg)
         ControlPacket *data = check_and_cast<ControlPacket *>(msg);
         double flowRatio = data->getData();
         lambda = lambdaFactor*flowRatio;
+        cout << "lambda"<< lambda<<endl;
+        cout<<"id="<<id<<"flowRatio"<<flowRatio<<endl;
+        cout<<"dst="<<dest<<endl;
         //lambda = lambdaMax/numRx;
-
+        if(lambda == 0) lambda = 1;
         interArrival = new TimerNextPacket("timer");
         interArrival->setLambda(1.0/lambda);
         if (dest != id)
             scheduleAt(simTime() + 1.0/lambda, interArrival);
-        ev << "Ratio: " << flowRatio << "   lambda: " << lambda << endl;
+            ev << "Ratio: " << flowRatio << "   lambda: " << lambda << endl;
 
         delete data;
 

@@ -13,7 +13,7 @@ class ReplayBuffer(object):
     def __init__(self, buffer_size):
         self.buffer_size = buffer_size
         self.num_experiences = 0
-        self.buffer = deque()
+        self.buffer = deque() # 双端队列
 
     def getBatch(self, batch_size):
         # Randomly sample batch_size examples

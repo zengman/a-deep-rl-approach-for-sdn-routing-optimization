@@ -26,6 +26,7 @@ simple Routing
         int numTx;
         int numNodes;
         string folderName;
+        int flow_num;
 
     gates:
         input localIn[];

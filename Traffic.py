@@ -18,12 +18,14 @@ def natural_key(string_):
 
 class Traffic():
 
-    def __init__(self, nodes_num, type, capacity):
+    def __init__(self, nodes_num, type, capacity, flow_num):
         self.nodes_num = nodes_num
+        self.flow_num = flow_num # 流的个数
         self.prev_traffic = None
         self.type = type
         self.capacity = capacity * nodes_num / (nodes_num - 1)
         self.dictionary = {}
+        self.dictionary['FLOW'] = self.flow_traffic # 生成需求
         self.dictionary['NORM'] = self.normal_traffic
         self.dictionary['UNI'] = self.uniform_traffic
         self.dictionary['CONTROLLED'] = self.controlled_uniform_traffic
@@ -36,11 +38,29 @@ class Traffic():
         if self.type.startswith('DIR:'):
             self.dir = sorted(listdir(self.type.split('DIR:')[-1]), key=lambda x: natural_key((x)))
         self.static = None
-        self.total_ou = OU(1, self.capacity/2, 0.1, self.capacity/2)
+        self.total_ou = OU(1, capacity/2, 0.1, capacity/2)
         self.nodes_ou = OU(self.nodes_num**2, 1, 0.1, 1)
 
+    def flow_traffic(self):
+        # generate flow demands
+        t = np.full((self.flow_num, 5),-1.0, dtype=float)
+        s_t_list = np.arange(self.nodes_num-2)
+
+        for i in range(0,self.flow_num):
+            t[i][0] = i
+            s_d = np.random.choice(s_t_list, 2)
+            t[i][1] = s_d[0]
+            if s_d[0] == s_d[1]:
+                s_d[1]+=1
+            t[i][2] = s_d[1]
+            t[i][3] =  np.random.rand(1,1)# df
+            t[i][4] = 2# Df
+
+        return np.asarray(t)
+
+
     def normal_traffic(self):
-        t = np.random.normal(capacity/2, capacity/2)
+        t = np.random.normal(self.capacity/2, self.capacity/2) # capacity?
         return np.asarray(t * softmax(np.random.randn(self.nodes_num, self.nodes_num))).clip(min=0.001)
 
     def uniform_traffic(self):

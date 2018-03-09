@@ -41,6 +41,7 @@ class Routing : public cSimpleModule
     int numNodes;
     int outPort[100];
     string folderName;
+    int flow_num;
 
 
 
