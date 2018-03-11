@@ -39,6 +39,7 @@ void Routing::initialize()
     getRoutingInfo(id-diff, outPort);
 
     Statistic::instance()->setNumNodes(numNodes);
+    Statistic::instance()->setNumFlow(flow_num);
     Statistic::instance()->setNumTx(numTx);
     Statistic::instance()->setFolder(folderName);
 }

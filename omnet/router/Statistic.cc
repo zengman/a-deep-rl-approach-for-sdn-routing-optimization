@@ -217,7 +217,6 @@ void Statistic::printStats() {
         for(int i = 0; i < flow_num; i++){
 
             string aux;
-
             getline(myfile, aux, ',');//flow_id
             getline(myfile, aux, ',');//src
             int src = stoi(aux);
@@ -225,26 +224,28 @@ void Statistic::printStats() {
             int dst = stoi(aux);
             getline(myfile, aux,',');//df
             double bw = stod(aux);
-            Flow_info[i].push_back(src);
-            Flow_info[i].push_back(dst);
+            getline(myfile, aux,',');//Df
+            Flow_info[i][0]=src;
+            Flow_info[i][1]=dst;
+//            Flow_info[i].push_back(src);
+//            Flow_info[i].push_back(dst);
             df.push_back(bw);
-            cout<<"bw="<<bw<<endl;
         }
     }
     myfile.close();
 
 
-    ofstream myfile_flow;
-    string filenameflow;
-    filenameflow = folderName + "/Flow.txt";
-    myfile_flow.open (filenameflow, ios::out | ios::trunc);
-    for (unsigned int i=0; i< flow_num; i++){
-        myfile_flow << i << ":";
-        myfile_flow << Flow_info[i][0] << ","<< Flow_info[i][1]<<','<<df[i]<<',';
-
-    }
-    myfile_flow << endl;
-    myfile_flow.close();
+//    ofstream myfile_flow;
+//    string filenameflow;
+//    filenameflow = folderName + "/Flow.txt";
+//    myfile_flow.open (filenameflow, ios::out | ios::trunc);
+//    for (unsigned int i=0; i< flow_num; i++){
+//        myfile_flow << i << ":";
+//        myfile_flow << Flow_info[i][0] << ","<< Flow_info[i][1]<<','<<df[i]<<',';
+//
+//    }
+//    myfile_flow << endl;
+//    myfile_flow.close();
 
      // Delay
     int steps = (SIMTIME/1000)+50;
