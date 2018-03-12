@@ -97,8 +97,8 @@ def rl_state(env):
     elif env.STATUM == 'T':
         # return matrix_to_rl(env.env_T)
         env.upd_env_S()
-        # return matrix_to_rl(env.env_S)
-        return np.concatenate((matrix_to_rl(env.env_Bw), matrix_to_rl(env.env_D), matrix_to_rl(env.env_J), matrix_to_rl(env.env_L)))
+        return matrix_to_rl(env.env_S)
+        # return np.concatenate((matrix_to_rl(env.env_Bw), matrix_to_rl(env.env_D), matrix_to_rl(env.env_J), matrix_to_rl(env.env_L)))
 
 def rl_reward(env, model, data_mean, data_std):
     '''根据env.env_D 和不同PRAEMIUM 计算reward '''
@@ -471,7 +471,7 @@ class OmnetLinkweightEnv():
         for i in range(len(Df)):
             x,y = v[i],Df[i]
             if x>y:
-                d = 1-(y-x)/x
+                d = 1-((y-x)/x)
                 v = v*d
         self.env_Bw = v
 
@@ -543,6 +543,7 @@ class OmnetLinkweightEnv():
         
         # traffic
         self.env_T = np.asarray(self.tgen.generate())
+        self.env_Bw = self.env_T[:,3]
         # self.upd_env_T(self.tgen.generate())
         
 
@@ -582,7 +583,9 @@ class OmnetLinkweightEnv():
         
         self.upd_env_W(action[:self.graph.number_of_edges()]) # 特殊函数处理过后的概率数字作为weights
         self.upd_env_R()
-        self.upd_env_Bw(action[self.graph.number_of_edges():])
+        bd = action[self.graph.number_of_edges():]
+        bd=bd*30
+        self.upd_env_Bw(bd)
         # self.upd_env_R_K(3)
 
         # write to file input for Omnet: Routing - path
@@ -622,12 +625,16 @@ class OmnetLinkweightEnv():
         # vector_to_file(log, self.folder + WHOLELOG, 'a')
         vector_to_file(matrix_to_log_v(self.env_D), self.folder + 'Dealy_store.csv','a')
         vector_to_file(matrix_to_log_v(self.env_W), self.folder + 'weights.csv','a')
+        vector_to_file(matrix_to_log_v(self.env_J), self.folder + 'Jitter.csv','a')
+        vector_to_file(matrix_to_log_v(self.env_L), self.folder + 'loss.csv','a')
+        vector_to_file(matrix_to_log_v(self.env_Rn), self.folder + 'Rn.csv','a')
+
         # vector_to_file(matrix_to_log_v(self.env_S), self.folder + 'Statte.csv', 'a')
 
         # generate traffic for next iteration
 
-        self.upd_env_T(self.tgen.generate()) 
-        # self.upd_env_T_tr(self.env_Bw)
+        # self.upd_env_T(self.tgen.generate()) 
+        self.upd_env_T_tr(self.env_Bw)
         # 重新生成需求
 
         
