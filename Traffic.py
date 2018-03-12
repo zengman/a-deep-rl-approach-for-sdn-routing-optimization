@@ -53,8 +53,8 @@ class Traffic():
             if s_d[0] == s_d[1]:
                 s_d[1]+=1
             t[i][2] = s_d[1]
-            t[i][3] =  np.random.rand(1,1)# df
-            t[i][4] = 2# Df
+            t[i][3] = np.random.randint(low=3,high=30,size=1)# df
+            t[i][4] = 2 # Df
 
         return np.asarray(t)
 

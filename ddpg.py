@@ -18,9 +18,9 @@ from ActorNetwork import ActorNetwork
 from CriticNetwork import CriticNetwork
 from OU import OU
 from helper import setup_exp, setup_run, parser, pretty, scale
+from Reward_QoE import NN_training 
 
-
-def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply Run
+def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 means Train, 0 means simply Run
     # SETUP STARTS HERE
     if train_indicator > 0:
         folder = setup_run(DDPG_config)
@@ -75,6 +75,7 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
     sess = tf.Session(config=config)
     from keras import backend as K
     K.set_session(sess)
+    
 
     actor = ActorNetwork(sess, state_dim, action_dim, DDPG_config)
     critic = CriticNetwork(sess, state_dim, action_dim, DDPG_config)
@@ -112,15 +113,15 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
         total_reward = 0
         for j in range(MAX_STEPS):
             print("step=:" + str(j))
-
             epsilon -= 1.0 / EXPLORE  #init esplion = 1
             a_t = np.zeros([1, action_dim]) # 1行,action_dim 列,元素为0
             noise_t = np.zeros([1, action_dim])
             print('action_dim',action_dim)
             a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0])) # actornetwork.model
             # add action = (weight, bandwidth)
-            print('s_t.shape[0]=',s_t.shape[0])
-            print('a_t_original=', a_t_original)
+            print('a_t_original=\n',a_t_original)
+            print('s_t=\n',s_t)
+            
             # return type = numpy array
             # numpy.shape?? 多维=行数，一维=个数
             # numpy.reshape(i,j) Gives a new shape to an array without changing its data. 数据不变，改变了行数列数
@@ -130,17 +131,17 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
 
             a = a_t_original[0]
             n = noise_t[0]
-            a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
-            print('a=',a)
-            print('n=',n)
-            print('a_t[0]=',a_t[0])
+            # a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
+            a_t[0] = a
+            
+            
             # if 0<(a+n)<1, return a+n, else return a-n 
 
             # numpy.clip(min,max) the elemnets who larger than max, will be replace by max, all elemnts between min and max
             
             # execute action
-            s_t1, r_t, done = env.step(a_t[0])  # call omnet
-            print('after step self.env_T=')
+            s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std)  # call omnet
+            print('after step self.env_T=\n')
             print(env.env_T)
             
             # state, action, reward, new_state,done
@@ -233,12 +234,14 @@ def playGame(DDPG_config, train_indicator=1):    #1 means Train, 0 means simply 
 
 
 if __name__ == "__main__":
+    # QoE training
+    model, data_mean, data_std = NN_training()
     # VANILLA
     if len(sys.argv) == 1:
         with open('DDPG.json') as jconfig:
             DDPG_config = json.load(jconfig)
         DDPG_config['EXPERIMENT'] = setup_exp()
-        playGame(DDPG_config, train_indicator=1)
+        playGame(DDPG_config, model, data_mean, data_std, train_indicator=1)
     # PLAY
     elif len(sys.argv) == 3:
         # WATCH OUT: it appends to *Log.csv files
@@ -248,7 +251,7 @@ if __name__ == "__main__":
             # here remove double slash at end if present
             experiment = sys.argv[2] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
             DDPG_config['EXPERIMENT'] = experiment
-            playGame(DDPG_config, train_indicator=0)
+            playGame(DDPG_config, model, data_mean, data_std, train_indicator=0)
     # PLAY WITH FILE TRAFFIC
     elif len(sys.argv) == 4:
         # WATCH OUT: it appends to *Log.csv files
@@ -262,4 +265,4 @@ if __name__ == "__main__":
 #             DDPG_config['MAX_STEPS'] = 1
             if DDPG_config['TRAFFIC'] == 'DIR:':
                 DDPG_config['TRAFFIC'] += sys.argv[3]
-            playGame(DDPG_config, train_indicator=0)
+            playGame(DDPG_config, model, data_mean, data_std, train_indicator=0)

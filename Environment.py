@@ -96,17 +96,19 @@ def rl_state(env):
         return np.concatenate((matrix_to_rl(env.env_B), matrix_to_rl(env.env_T)))
     elif env.STATUM == 'T':
         # return matrix_to_rl(env.env_T)
+        env.upd_env_S()
         # return matrix_to_rl(env.env_S)
         return np.concatenate((matrix_to_rl(env.env_Bw), matrix_to_rl(env.env_D), matrix_to_rl(env.env_J), matrix_to_rl(env.env_L)))
 
-def rl_reward(env):
+def rl_reward(env, model, data_mean, data_std):
     '''根据env.env_D 和不同PRAEMIUM 计算reward '''
     delay = np.asarray(env.env_D)
     mask = delay == np.inf
     delay[mask] = len(delay)*np.max(delay[~mask])
 
     if env.PRAEMIUM == 'AVG':
-        reward = -np.mean(matrix_to_rl(delay))
+        # reward = -np.mean(matrix_to_rl(delay))
+        reward = reward_QoE (env.env_Bw,env.env_D,env.env_J,env.env_L, model, data_mean, data_std)
     elif env.PRAEMIUM == 'MAX':
         reward = -np.max(matrix_to_rl(delay))
     elif env.PRAEMIUM == 'AXM':
@@ -372,15 +374,16 @@ class OmnetLinkweightEnv():
         self.env_L = np.full(self.flow_num, -1.0, dtype=float) # lost
         self.env_J = np.full(self.flow_num, -1.0, dtype=float) # jitter
         self.env_Bw = np.full(self.flow_num, 10, dtype=float) # bandwidth of each flow， 假设flow数目为N
-        # self.env_S = np.full((self.flow_num, 4), -1.0, dtype=float) # state(bw, delay, loss, jitter)
+        self.env_S = np.full((self.flow_num, 4), -1.0, dtype=float) # state(bw, delay, jitter, loss)
         self.env_Path = []
         
         self.counter = 0
     
     def upd_env_T(self, matrix):
         self.env_T = np.asarray(matrix)
-        # np.fill_diagonal(self.env_T, -1) 
-        # 用-1填充矩阵的对角线
+        # self.env_T[:,3] = vector
+    def upd_env_T_tr(self, vector):
+        self.env_T[:,3] = vector
 
     def upd_env_W(self, vector):
         self.env_W = np.asarray(softmax(vector))
@@ -474,24 +477,43 @@ class OmnetLinkweightEnv():
 
 
 
-    # def upd_env_S(self):
-    #     self.env_S[:,0] = self.env_Bw # bandwidth init = 30
-    #     self.env_S[:,1] = self.env_D # delay
-    #     self.env_S[:,2] = self.env_L # loss
-    #     self.env_S[:,3] = self.env_J # jitter
+    def upd_env_S(self):
+        self.env_S[:,0] = self.env_Bw # bandwidth init = 30
+        self.env_S[:,1] = self.env_D # delay
+        self.env_S[:,3] = self.env_J # jitter
+        self.env_S[:,2] = self.env_L # loss
         
     def logheader(self, easy=False):
-        nice_matrix = np.chararray([self.ACTIVE_NODES]*2, itemsize=20)
-        for i in range(self.ACTIVE_NODES):
-            for j in range(self.ACTIVE_NODES):
+        nice_matrix = np.chararray([self.flow_num]*2, itemsize=20)
+        for i in range(self.flow_num):
+            for j in range(self.flow_num):
                 nice_matrix[i][j] = str(i) + '-' + str(j)
         np.fill_diagonal(nice_matrix, '_')
         nice_list = list(nice_matrix[(nice_matrix!=b'_')])
-        th = ['t' + _.decode('ascii') for _ in nice_list]
-        rh = ['r' + _.decode('ascii') for _ in nice_list]
+
+        tra_matrix = np.chararray((self.flow_num, 5), itemsize=20)
+        for i in range(self.flow_num):
+            for j in range(5):
+                tra_matrix[i][j] = str(i) + '-' + str(j)
+        np.fill_diagonal(tra_matrix, '_')
+        tra_list = list(tra_matrix[(tra_matrix!=b'_')])
+        
+        rnw_matrix = np.chararray([self.ACTIVE_NODES]*2, itemsize=20)
+        for i in range(self.ACTIVE_NODES):
+            for j in range(self.ACTIVE_NODES):
+                rnw_matrix[i][j] = str(i) + '-' + str(j)
+        np.fill_diagonal(rnw_matrix, '_')
+        r_list = list(rnw_matrix[(rnw_matrix!=b'_')])
+
+
+        th = ['t' + _.decode('ascii') for _ in tra_list]
+        bh = ['b' + _.decode('ascii') for _ in nice_list]
         dh = ['d' + _.decode('ascii') for _ in nice_list]
+        jh = ['j' + _.decode('ascii') for _ in nice_list]
+        lh = ['l' + _.decode('ascii') for _ in nice_list]
+        rnh = ['r' + _.decode('ascii') for _ in r_list]
         ah = ['a' + str(_[0]) + '-' + str(_[1]) for _ in self.graph.edges()]
-        header = ['counter'] + th + rh + dh + ['lost'] + ah + ['reward']
+        header = ['counter'] + th + bh + dh + jh + lh + ['reward'] + ah + rnh
         if easy:
             header = ['counter', 'lost', 'AVG', 'MAX', 'AXM', 'GEO']
         vector_to_file(header, self.folder + WHOLELOG, 'w')
@@ -505,15 +527,14 @@ class OmnetLinkweightEnv():
         if self.counter != 0:
             return None
 
-        self.logheader(easy)
+        self.logheader()
 
         # routing
         self.upd_env_W(np.full([self.a_dim], 0.50, dtype=float)) 
-        print('self.env_w=',self.env_W)
+   
         # 计算self.env_w的值
         self.upd_env_R()
-        print('self.env_R=',self.env_R)
-        print('self.env_Rn=',self.env_Rn)
+     
         # 计算self.env_R self.env_Rn
 
         if self.ACTUM == 'DELTA':
@@ -521,8 +542,9 @@ class OmnetLinkweightEnv():
             # VERIFY FILE POSITION AND FORMAT (separator, matrix/vector) np.savetxt("tmp.txt", routing, fmt="%d")
         
         # traffic
-        self.upd_env_T(self.tgen.generate())
-        print('reset self.env_T=',self.env_T)
+        self.env_T = np.asarray(self.tgen.generate())
+        # self.upd_env_T(self.tgen.generate())
+        
 
         vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
         # 把self.env_T 写入traffic.txt
@@ -555,7 +577,7 @@ class OmnetLinkweightEnv():
         return rl_state(self) # if STATUM==T, return self.env_S 
 
     
-    def step(self, action):
+    def step(self, action, model, data_mean, data_std):
         self.counter += 1
         
         self.upd_env_W(action[:self.graph.number_of_edges()]) # 特殊函数处理过后的概率数字作为weights
@@ -585,18 +607,31 @@ class OmnetLinkweightEnv():
        
         # self.upd_env_S()
 
-        reward = rl_reward(self) # TODO: 拿到QoE，更新
+        reward = rl_reward(self, model, data_mean, data_std)
 
         # log everything to file
-        vector_to_file([-reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
+        vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
         # cur_state = rl_state(self) # env_S
-        # log = np.concatenate(([self.counter], matrix_to_log_v(self.env_T), matrix_to_log_v(self.env_Rn), matrix_to_log_v(self.env_D), [self.env_L], matrix_to_log_v(self.env_W), [-reward]))
+
+        # log = np.concatenate(([self.counter], matrix_to_log_v(self.env_T), \
+        # matrix_to_log_v(self.env_Bw), matrix_to_log_v(self.env_D), matrix_to_log_v(self.env_J), \
+        # matrix_to_log_v(self.env_L),\
+        # [-reward])
+
+
         # vector_to_file(log, self.folder + WHOLELOG, 'a')
+        vector_to_file(matrix_to_log_v(self.env_D), self.folder + 'Dealy_store.csv','a')
+        vector_to_file(matrix_to_log_v(self.env_W), self.folder + 'weights.csv','a')
+        # vector_to_file(matrix_to_log_v(self.env_S), self.folder + 'Statte.csv', 'a')
 
         # generate traffic for next iteration
 
-        self.upd_env_T(self.tgen.generate()) # 重新生成需求
-        # vector_to_file(matrix_to_omnet_v(self.env_T), 'ts.txt', 'w')
+        self.upd_env_T(self.tgen.generate()) 
+        # self.upd_env_T_tr(self.env_Bw)
+        # 重新生成需求
+
+        
+        vector_to_file(matrix_to_omnet_v(self.env_T), 'ts.txt', 'w')
 
         # write to file input for Omnet: Traffic, or do nothing if static
         if self.TRAFFIC.split(':')[0] not in ('STAT', 'STATEQ', 'FILE'):

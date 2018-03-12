@@ -87,7 +87,7 @@ void TrafficController::getTrafficInfo(int id, double rData[]) {
 
 //     rData[100] = {0.0};
      for(int i = 0; i < numNodes; i++){
-         rData[i]=0.0;
+         rData[i]=0;
      }
      rData[id]=-1;
      if (myfile.is_open()) {

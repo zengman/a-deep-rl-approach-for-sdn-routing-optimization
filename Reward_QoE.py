@@ -38,7 +38,10 @@ def NN_pridict(data, model, data_mean, data_std):
     feature = ['F1','F2','F3','F4'] 
     #4 预测，并还原结果。
     x = ((data[feature] - data_mean[feature])/data_std[feature]).as_matrix()
-    y = model.predict(x) * data_std['L1'] + data_mean['L1']
+    value = np.full((x[0][0].shape[0],4), -1, dtype=float)
+    for i in range(4):
+        value[:,i] = x[0][i]
+    y = model.predict(value) * data_std['L1'] + data_mean['L1']
     return y
 
 
@@ -52,7 +55,7 @@ def reward_QoE(x1,x2,x3,x4, model, data_mean, data_std):
     b.append(x4)
     data_state = pd.DataFrame([b], columns= feature, index=['0'])
     reward = NN_pridict(data_state, model, data_mean, data_std)
-    return reward[0][0]
+    return np.mean(reward)
     
 #     #5 导出结果
 #     data.to_excel(outputfile) 
