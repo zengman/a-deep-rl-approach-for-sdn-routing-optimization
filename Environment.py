@@ -9,7 +9,7 @@ import subprocess
 import networkx as nx
 import pandas as pd
 
-from helper import pretty, softmax
+from helper import pretty, softmax, MaxMinNormalization
 from Traffic import Traffic
 from K_shortest_path import k_shortest_paths
 from Reward_QoE import reward_QoE 
@@ -99,7 +99,12 @@ def rl_state(env):
         # return matrix_to_rl(env.env_T)
         env.upd_env_S()
         # return matrix_to_rl(env.env_S)
-        temp = np.concatenate((matrix_to_rl(env.env_Bw), matrix_to_rl(env.env_D), matrix_to_rl(env.env_J), matrix_to_rl(env.env_L)))
+        temp = np.concatenate((
+            MaxMinNormalization(matrix_to_rl(env.env_Bw)), \
+            MaxMinNormalization(matrix_to_rl(env.env_D)), \
+            MaxMinNormalization(matrix_to_rl(env.env_J)), \
+            MaxMinNormalization(matrix_to_rl(env.env_L))\
+            ))
         return temp
 
 def rl_reward(env, model, data_mean, data_std):

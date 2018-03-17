@@ -11,7 +11,7 @@ network NetworkAll
         {
           // delay = 100μs;
            // double length @unit(m);
-            datarate = 32Mbps;
+            datarate = 25Mbps;
             ber = uniform(0.0001, 0.005);
             delay = uniform(0.01ms, 0.1ms);
             per = uniform(0.0001,0.005);

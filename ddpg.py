@@ -126,14 +126,15 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             # return type = numpy array
             # numpy.shape?? 多维=行数，一维=个数
             # numpy.reshape(i,j) Gives a new shape to an array without changing its data. 数据不变，改变了行数列数
+            
             if train_indicator and epsilon > 0 and (step % 1000) // 100 != 9:  # init step = 0
                 noise_t[0] = epsilon * ou.evolve() # evolove() 高斯分布之类的数学过程
                 # train_indicator == 1 means train
 
             a = a_t_original[0]
             n = noise_t[0]
-            a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
-            # a_t[0] = a
+            # a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
+            a_t[0] = a
             
             
             # if 0<(a+n)<1, return a+n, else return a-n 

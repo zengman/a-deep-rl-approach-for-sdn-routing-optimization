@@ -166,3 +166,17 @@ def selu(x):
     alpha = 1.6732632423543772848170429916717
     scale = 1.0507009873554804934193349852946
     return scale * elu(x, alpha)
+
+
+def Normalizing(x, Max, Min):
+    if Max == Min:
+        return x
+    x = (x - Min) / (Max - Min)
+    return x
+
+def MaxMinNormalization(array):  
+    Max = np.max(array)
+    Min = np.min(array)
+    new_array = [Normalizing(x, Max, Min) for x in array]
+    return new_array;  
+
