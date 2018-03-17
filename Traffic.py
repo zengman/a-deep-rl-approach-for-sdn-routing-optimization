@@ -6,6 +6,7 @@ __author__ = "giorgio@ac.upc.edu"
 import numpy as np
 from os import listdir
 from re import split
+import pandas as pd
 
 from OU import OU
 from helper import softmax
@@ -35,11 +36,32 @@ class Traffic():
         self.dictionary['STATEQ'] = self.stat_eq_traffic
         self.dictionary['FILE'] = self.file_traffic
         self.dictionary['DIR'] = self.dir_traffic
+        self.dictionary['CSV'] = self.csv_traffic
         if self.type.startswith('DIR:'):
             self.dir = sorted(listdir(self.type.split('DIR:')[-1]), key=lambda x: natural_key((x)))
         self.static = None
         self.total_ou = OU(1, capacity/2, 0.1, capacity/2)
         self.nodes_ou = OU(self.nodes_num**2, 1, 0.1, 1)
+        
+    def csv_traffic(self):
+        t = np.full((self.flow_num, 4), -1.0, dtype=float)
+        df=pd.read_csv('./flows.csv', header=None, sep=',')
+        data = df.head(self.flow_num)
+        for i in range(self.flow_num):
+            t[i,:] = list(data.ix[i,:])
+        a = np.arange(0,self.flow_num)
+        t[:,0] -= 1
+        t[:,1] -= 1
+        print(t[:,2])
+        return np.c_[a,t]
+        # with open('./flows.csv', 'r') as file:
+        #     string = file.readline().strip().strip(',')
+        # v = np.asarray(tuple(float(x) for x in string.split(',')[:20]))
+        # M = np.split(v, 5)
+        # temp = np.vstack(M)
+        # a = np.arange(0,5) # flow id
+        # return np.c_[a,temp]
+
 
     def flow_traffic(self):
         # generate flow demands
@@ -53,8 +75,8 @@ class Traffic():
             if s_d[0] == s_d[1]:
                 s_d[1]+=1
             t[i][2] = s_d[1]
-            t[i][3] = np.random.randint(low=3,high=30,size=1)# df
-            t[i][4] = 30 # Df
+            t[i][3] = np.random.randint(low=1,high=3,size=1)# df
+            t[i][4] = np.random.randint(low=4,high=30,size=1) # Df
 
         return np.asarray(t)
 

@@ -33,13 +33,13 @@ class Statistic {
   public:
     static Statistic *instance();
     void infoTS(simtime_t time);
-    void setDelay(simtime_t time, int i, int j, double d);
+    void setDelay(simtime_t time, int i, int j, double d, int flow_id);
     // void setJitter(simtime_t time, int i, int j, double d);
     void setTraffic(simtime_t time, int i, int j, double t);
     void setRouting(int n, int r, double p);
     void setLambda(double l);
     void setGeneration(int genType);
-    void setLost(simtime_t time, int n, int p);
+    void setLost(simtime_t time, int n, int p, int flow_id);
     void setLost(simtime_t time);
     void setNumTx(int n);
     void setNumFlow(int n);
@@ -47,7 +47,7 @@ class Statistic {
     void setRoutingParaam(double r);
     void setMaxSim(double r);
     void setFolder(string folder);
-
+    void setFlowId(int flow_id);
 
     void printStats();
 
@@ -73,15 +73,18 @@ class Statistic {
     double routingP;
     int flow_num;
 
+
     string folderName;
 
 
     int drops;
+    int flow_id;
     vector< vector< vector <double> > > Traffic;
     vector< vector <double> > Routing;
-    vector< vector< vector <double> > >  Delay;
-    vector< vector <double> >   DropsV;
-    vector< vector <vector <double> > >   Jitter;
+    vector< vector< vector < vector <double> > > >  Delay;
+
+    vector< vector< vector < vector <double> > > >   Jitter;
+    vector< vector <vector <double> > >   DropsV;
     vector< vector <int> > Flow_info;
 
     void initLinkID();

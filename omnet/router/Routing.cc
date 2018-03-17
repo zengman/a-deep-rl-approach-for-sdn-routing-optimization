@@ -34,9 +34,16 @@ void Routing::initialize()
     numNodes = par("numNodes");
     folderName = par("folderName").stdstringValue();
     flow_num = par("flow_num");
+    outPort = vector<vector<int>  > (100, vector<int>(100));
 
     int diff = numNodes - numTx;
-    getRoutingInfo(id-diff, outPort);
+    for (int i = 0; i < flow_num; i++){
+        int outPort_f[100];
+        getRoutingInfo(id-diff, i,outPort_f);
+
+
+    }
+
 
     Statistic::instance()->setNumNodes(numNodes);
     Statistic::instance()->setNumFlow(flow_num);
@@ -51,16 +58,17 @@ void Routing::handleMessage(cMessage *msg)
     if (id == data->getDstNode()) {
         ev << this->getFullPath() << "  Message received" << endl;
         simtime_t delayPaquet= simTime() - data->getCreationTime();
-        Statistic::instance()->setDelay(simTime(), data->getSrcNode(), id, delayPaquet.dbl());
+        Statistic::instance()->setDelay(simTime(), data->getSrcNode(), id, delayPaquet.dbl(),data->getFlow_id());
         delete msg;
     }
     else if (data->getTtl() == 0) {
         ev << this->getFullPath() << "  TTL = 0. Msg deleted" << endl;
-        Statistic::instance()->setLost(simTime(), data->getSrcNode(), data->getDstNode());
+        Statistic::instance()->setLost(simTime(), data->getSrcNode(), data->getDstNode(), data->getFlow_id());
         delete msg;
     }
     else { // Tant in com out
-        int destPort = outPort[data->getDstNode()];;
+        int flow_id = data->getFlow_id();
+        int destPort = outPort[flow_id][data->getDstNode()];
         data->setTtl(data->getTtl()-1);
         send(msg, "out", destPort);
 
@@ -72,31 +80,40 @@ void Routing::handleMessage(cMessage *msg)
 
 }
 
-void Routing::getRoutingInfo(int id, int rData[]) {
+void Routing::getRoutingInfo(int id, int flow_id, int rData[]) {
+//     for (int x =0; x < flow_num; x++){
+         int x = flow_id;
+         stringstream stream;
+         stream<<x;
+         string string_temp=stream.str();
+         string txtName = "/Routing" + string_temp + ".txt";
+         ifstream myfile (folderName + txtName);
+         double val;
 
-     ifstream myfile (folderName + "/Routing.txt");
-     double val;
+              if (myfile.is_open()) {
+                  int i = 0;
+                  while (id != i) {
+                      for(int k = 0; k < numTx; k++) {
+                          string aux;
+                          getline(myfile, aux, ',');
+                      }
+                      //myfile >> val;
+                      i++;
+                  }
 
-     if (myfile.is_open()) {
-         int i = 0;
-         while (id != i) {
-             for(int k = 0; k < numTx; k++) {
-                 string aux;
-                 getline(myfile, aux, ',');
-             }
-             //myfile >> val;
-             i++;
-         }
+                  for(int k = 0; k < numTx; k++) {
+                      string aux;
+                      getline(myfile, aux, ',');
+                      val = stod(aux);
+                      rData[k] = val;
+                      outPort[flow_id][k] = val;
+                  }
 
-         for(int k = 0; k < numTx; k++) {
-             string aux;
-             getline(myfile, aux, ',');
-             val = stod(aux);
-             rData[k] = val;
-         }
+                  myfile.close();
+              }
+//     }
 
-         myfile.close();
-     }
+
 
 
 }

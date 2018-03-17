@@ -27,6 +27,8 @@ simple Application
         int dest;
         int generation;
         int numNodes;
+   
+        
 
 
         double simulationDuration;
@@ -38,4 +40,5 @@ simple Application
     gates:
         output out;
         input tcontrol;
+        
 }

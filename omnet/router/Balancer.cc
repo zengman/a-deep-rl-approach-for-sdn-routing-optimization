@@ -57,7 +57,7 @@ void Balancer::handleMessage(cMessage *msg)
     if (id == data->getDstNode()) {
         ev << this->getFullPath() << "  Message received" << endl;
         simtime_t delayPaquet= simTime() - data->getCreationTime();
-        Statistic::instance()->setDelay(simTime(), data->getSrcNode(), id, delayPaquet.dbl());
+        Statistic::instance()->setDelay(simTime(), data->getSrcNode(), id, delayPaquet.dbl(),data->getFlow_id());
         delete msg;
     }
     else { // Tant in com out

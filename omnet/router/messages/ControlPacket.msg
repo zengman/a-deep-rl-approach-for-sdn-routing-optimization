@@ -19,4 +19,5 @@
 packet ControlPacket {
 
     double data;
+    int flow_id;
 }

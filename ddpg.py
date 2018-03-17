@@ -116,11 +116,12 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             epsilon -= 1.0 / EXPLORE  #init esplion = 1
             a_t = np.zeros([1, action_dim]) # 1行,action_dim 列,元素为0
             noise_t = np.zeros([1, action_dim])
-            print('action_dim',action_dim)
+            # print('action_dim',action_dim)
             a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0])) # actornetwork.model
+
             # add action = (weight, bandwidth)
-            print('a_t_original=\n',a_t_original)
-            print('s_t=\n',s_t)
+            # print('a_t_original=\n',a_t_original)
+            # print('s_t=\n',s_t)
             
             # return type = numpy array
             # numpy.shape?? 多维=行数，一维=个数
@@ -131,8 +132,8 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
 
             a = a_t_original[0]
             n = noise_t[0]
-            # a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
-            a_t[0] = a
+            a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
+            # a_t[0] = a
             
             
             # if 0<(a+n)<1, return a+n, else return a-n 
@@ -141,8 +142,8 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             
             # execute action
             s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std)  # call omnet
-            print('after step self.env_T=\n')
-            print(env.env_T)
+            # print('after step self.env_T=\n')
+            # print(env.env_T)
             
             # state, action, reward, new_state,done
 
@@ -177,9 +178,9 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
                 actor.train(states, grads)
                 actor.target_train()
                 critic.target_train()
-                with open(folder + 'lossLog.csv', 'a') as file:
+                with open(folder + 'lossLog.txt', 'a') as file:
                     file.write(pretty(loss) + '\n')
-
+            print(" every step Reward", "%.8f" % r_t)
             total_reward += r_t
             s_t = s_t1
             # print('begin layer')
@@ -187,7 +188,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             for layer in actor.model.layers + critic.model.layers:
                 if layer.name in layers_to_mind.keys():
                     L2[layer.name] = np.linalg.norm(np.ravel(layer.get_weights()[0])-layers_to_mind[layer.name])
-#                     vector_to_file(np.ravel(layer.get_weights()[0]), folder + 'weights_' + layer.name + 'Log.csv', 'a')
+                    # vector_to_file(np.ravel(layer.get_weights()[0]), folder + 'weights_' + layer.name + 'Log.csv', 'a')
                     layers_to_mind[layer.name] = np.ravel(layer.get_weights()[0])
 #             if max(L2.values()) <= 0.02:
 #                 wise = True
@@ -195,8 +196,8 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             if train_indicator and len(batch) >= BATCH_SIZE:
                 vector_to_file([L2[x] for x in ltm], folder + 'weightsL2' + 'Log.csv', 'a')
 
-            vector_to_file(a_t_original[0], folder + 'actionLog.csv', 'a')
-            vector_to_file(noise_t[0], folder + 'noiseLog.csv', 'a')
+            vector_to_file(a_t_original[0], folder + 'actionLog.txt', 'a')
+            # vector_to_file(noise_t[0], folder + 'noiseLog.csv', 'a')
 
             if 'PRINT' in DDPG_config.keys() and DDPG_config['PRINT']:
                 print("Episode", "%5d" % i, "Step", "%5d" % step, "Reward", "%.6f" % r_t)

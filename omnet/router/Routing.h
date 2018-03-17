@@ -39,7 +39,7 @@ class Routing : public cSimpleModule
     int id;
     int numTx;
     int numNodes;
-    int outPort[100];
+    vector<vector<int> >outPort;
     string folderName;
     int flow_num;
 
@@ -52,7 +52,7 @@ class Routing : public cSimpleModule
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
-    void getRoutingInfo(int id, int rData[]);
+    void getRoutingInfo(int id, int flow_id, int rData[]);
 
 };
 

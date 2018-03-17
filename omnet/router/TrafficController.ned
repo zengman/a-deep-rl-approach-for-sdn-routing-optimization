@@ -29,4 +29,5 @@ simple TrafficController
 
     gates:
         output out[];
+        output flowIdout[];
 }

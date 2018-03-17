@@ -91,16 +91,19 @@ def k_shortest_paths(G, source, target, k=1, weight='weight'):
             
             for n in range(len(root_path) - 1):
                 node = root_path[n]
+                newG = G.copy()
                 # out-edges
-                for u, v, edge_attr in G.edges_iter(node, data=True):
+                for u, v, edge_attr in newG.edges_iter(node, data=True):
                     G.remove_edge(u, v)
                     edges_removed.append((u, v, edge_attr))
                 
                 if G.is_directed():
                     # in-edges
-                    for u, v, edge_attr in G.in_edges_iter(node, data=True):
+                    
+                    for u, v, edge_attr in newG.in_edges_iter(node, data=True):
                         G.remove_edge(u, v)
                         edges_removed.append((u, v, edge_attr))
+                    
             
             spur_path_length, spur_path = nx.single_source_dijkstra(G, spur_node, target, weight=weight)            
             if target in spur_path and spur_path[target]:

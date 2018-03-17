@@ -38,11 +38,17 @@ class TrafficController : public cSimpleModule
         double flowRatio[100];
         string  folderName;
         int flow_num;
+        vector< vector <int> > Flow_info;
+        vector<double> Bandwidth;
+
+
+
 
     protected:
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
-        void getTrafficInfo(int id, double rData[]);
+        void getTrafficInfo(int id, int flow_id, double rData[]);
+
 };
 
 #endif

@@ -19,4 +19,6 @@
 message TimerNextPacket {
     int target;
     double lambda;
+    int flow_id;
+    double bandwidth;
 }

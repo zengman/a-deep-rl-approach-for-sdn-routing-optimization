@@ -20,6 +20,9 @@ packet DataPacket {
 
     int srcNode;
     int dstNode;
+    int flow_id;
+    double bandwidth;
+    double send_delay;
 
     int ttl;
     int lastRouter;

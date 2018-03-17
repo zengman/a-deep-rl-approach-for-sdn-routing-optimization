@@ -42,6 +42,8 @@ void Application::initialize()
     numPackets = 0;
 
 
+
+
     Statistic::instance()->setGeneration(genT);
     Statistic::instance()->setMaxSim(MAXSIM);
     Statistic::instance()->setLambda(lambdaFactor);
@@ -57,16 +59,19 @@ void Application::handleMessage(cMessage *msg)
         DataPacket *data = new DataPacket("dataPacket");
 
         int size;
+//        genT = 0;
         switch (genT) {
             case 0: // Poisson
-                size = exponential(1000);
-                if (size > 50000) size = 50000;
+                size = exponential(10000) +1024*2;
+                if (size > 73728) size = 73728;
+
+//                if (size < 4096) size = 4096;
                 break;
             case 1: // Deterministic
-                size = 1000;
+                size = 5120;
                 break;
             case 2: // Uniform
-                size = uniform(0,2000);
+                size = uniform(4096,73728);
                 break;
             case 3: // Binomial
                 if (dblrand() < 0.5) size = 300;
@@ -75,15 +80,21 @@ void Application::handleMessage(cMessage *msg)
             default:
                 break;
         }
-
-
+//        size = size * 64 * 16 * 2 + 2048 + 1024;
+//        if (size > 73728) size = 73728;
+        TimerNextPacket *time =  check_and_cast<TimerNextPacket *>(msg);
+        int flow_id = time->getFlow_id();
+        double bandwidth = time->getBandwidth();
         data->setBitLength(size);
         data->setTtl(numRx);
-
         data->setDstNode(dest);
         data->setSrcNode(id);
         data->setLastTS(simTime().dbl());
+        data->setFlow_id(flow_id);
+        data->setBandwidth(bandwidth);
 
+//        ev << "now time" << simTime() << "----packets" << numPackets
+//                            << "send packet: "<< id << "----"<< dest << endl;
         send(data, "out");
 
         numPackets++;
@@ -92,8 +103,21 @@ void Application::handleMessage(cMessage *msg)
 
 
         if (simTime() < MAXSIM) {
-            simtime_t etime= exponential(1.0/lambda);
+
+            simtime_t etime;
+            if(bandwidth == 0.01 || bandwidth == 0) {
+                etime = exponential(1.0/lambda);
+//                ev << "normal packet: "<< id << "----"<< dest << endl;
+            }
+            else{
+//                etime = exponential(1.0/bandwidth);
+                etime = (1/bandwidth);
+//                etime = size/(bandwidth*1024*1024);
+
+            }
             scheduleAt(simTime() + etime, msg);
+//            ev << "now time" << simTime() << "----packets" << numPackets
+//                    << "speed packet: "<< id << "----"<< dest <<":--"<<etime << endl;
         }
         else {
             EV << "END simulation" << endl;
@@ -101,16 +125,20 @@ void Application::handleMessage(cMessage *msg)
     }
 
     else {
+
         ControlPacket *data = check_and_cast<ControlPacket *>(msg);
         double flowRatio = data->getData();
+        int flow_id = data->getFlow_id();
         lambda = lambdaFactor*flowRatio;
-        cout << "lambda"<< lambda<<endl;
-        cout<<"id="<<id<<"flowRatio"<<flowRatio<<endl;
-        cout<<"dst="<<dest<<endl;
+
         //lambda = lambdaMax/numRx;
-        if(lambda == 0) lambda = 1;
+        if(lambda == 0) {
+            lambda = 1;
+        }
         interArrival = new TimerNextPacket("timer");
         interArrival->setLambda(1.0/lambda);
+        interArrival->setFlow_id(flow_id);
+        interArrival->setBandwidth(flowRatio);
         if (dest != id)
             scheduleAt(simTime() + 1.0/lambda, interArrival);
             ev << "Ratio: " << flowRatio << "   lambda: " << lambda << endl;

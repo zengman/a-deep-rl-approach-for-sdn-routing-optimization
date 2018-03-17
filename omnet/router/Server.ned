@@ -22,7 +22,7 @@ module Server
         int numNodes;
         int id;
         int flow_num;
-       
+
         @display("i=misc/node_vs,gold;bgb=224,246");
 
 
@@ -36,23 +36,30 @@ module Server
             id = id;
             nodeRatio = uniform(0.1,1);
             numNodes = numTx;
-        };
+            @display("p=179,32");
+        }
+
         app[numNodes]: Application {
             id = id;
             dest = index;
             numNodes = numTx;
-        };
+            @display("p=62,80");
+        }
         routing: Routing {
             numTx = numTx;
             numNodes = numTx;
             id = id;
-        };
-        queue[sizeof(port)]: NodeQueue;
+            @display("p=171,180");
+        }
+        queue[sizeof(port)]: NodeQueue {
 
+            @display("p=42,198");
+        }
     connections:
         for i=0..numNodes-1 {
             routing.localIn++ <-- app[i].out;
             tcontroller.out++ --> app[i].tcontrol;
+         
         }
         for i=0..sizeof(port)-1 {
             routing.out++ --> queue[i].in;

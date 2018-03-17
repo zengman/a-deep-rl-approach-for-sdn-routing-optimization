@@ -135,7 +135,7 @@ def parser():
 def pretty(f):
     try:
         float(f)
-        return str.format('{0:.3f}', f).rstrip('0').rstrip('.')
+        return str.format('{0:.8f}', f).rstrip('0').rstrip('.')
     except:
         return str(f)
 
