@@ -19,6 +19,7 @@ from CriticNetwork import CriticNetwork
 from OU import OU
 from helper import setup_exp, setup_run, parser, pretty, scale
 from Reward_QoE import NN_training 
+from avgdata import all_print
 
 def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 means Train, 0 means simply Run
     # SETUP STARTS HERE
@@ -104,7 +105,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
 
     print("OMNeT++ Experiment Start.")
     # initial state of simulator
-    s_t = env.reset()
+    s_t = env.reset(model, data_mean, data_std)
     loss = 0
     for i in range(EPISODE_COUNT):
 
@@ -118,7 +119,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             noise_t = np.zeros([1, action_dim])
             # print('action_dim',action_dim)
             a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0])) # actornetwork.model
-
+            vector_to_file(a_t_original[0], folder + 'actionLog.txt', 'a')
             # add action = (weight, bandwidth)
             # print('a_t_original=\n',a_t_original)
             # print('s_t=\n',s_t)
@@ -127,7 +128,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             # numpy.shape?? 多维=行数，一维=个数
             # numpy.reshape(i,j) Gives a new shape to an array without changing its data. 数据不变，改变了行数列数
             
-            if train_indicator and epsilon > 0 and (step % 1000) // 100 != 9:  # init step = 0
+            if train_indicator and epsilon > 0 and (step % 100) // 10 != 9:  # init step = 0
                 noise_t[0] = epsilon * ou.evolve() # evolove() 高斯分布之类的数学过程
                 # train_indicator == 1 means train
 
@@ -142,11 +143,8 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             # numpy.clip(min,max) the elemnets who larger than max, will be replace by max, all elemnts between min and max
             
             # execute action
-            s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std)  # call omnet
-            # print('after step self.env_T=\n')
-            # print(env.env_T)
+            s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std) 
             
-            # state, action, reward, new_state,done
 
             buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
             # s_t initial state 
@@ -162,12 +160,15 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             y_t = np.zeros([len(batch), action_dim])
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
             # ???
+            # print('target', target_q_values)
             # according to dones, init y_t
             for k in range(len(batch)):
                 if dones[k]:
                     y_t[k] = rewards[k]
                 else:
                     y_t[k] = rewards[k] + GAMMA*target_q_values[k]
+                    # print('reward k= ', rewards[k])
+                    # print('y_t[k]',y_t[k])
 
             # print('end batch for')
 
@@ -197,7 +198,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             if train_indicator and len(batch) >= BATCH_SIZE:
                 vector_to_file([L2[x] for x in ltm], folder + 'weightsL2' + 'Log.csv', 'a')
 
-            vector_to_file(a_t_original[0], folder + 'actionLog.txt', 'a')
+            
             # vector_to_file(noise_t[0], folder + 'noiseLog.csv', 'a')
 
             if 'PRINT' in DDPG_config.keys() and DDPG_config['PRINT']:
@@ -215,7 +216,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             if done or wise:
                 break
 
-        if np.mod((i+1), 2) == 0:   # writes at every 2nd episode
+        if np.mod((i+1), 1) == 0:   # writes at every  episode
             if (train_indicator):
                 actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
                 actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
@@ -226,6 +227,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
                 critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
                 with open(folder + "criticmodel.json", "w") as outfile:
                     outfile.write(critic.model.to_json(indent=4) + '\n')
+                all_print(folder)
 
         print("TOTAL REWARD @ " + str(i) + "-th Episode  : Reward " + str(total_reward))
         print("Total Step: " + str(step))

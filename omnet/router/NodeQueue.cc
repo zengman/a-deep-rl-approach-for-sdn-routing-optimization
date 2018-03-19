@@ -83,7 +83,7 @@ void NodeQueue::handleMessage(cMessage *msg)
             else {
                 deleted++;
                 DataPacket *data = check_and_cast<DataPacket *>(msg);
-                Statistic::instance()->setLost(simTime(), data->getSrcNode(), data->getDstNode(), data->getFlow_id());
+                Statistic::instance()->setLost(simTime(), data->getSrcNode(), data->getDstNode(), data->getFlow_id(), data->getBitLength());
                 delete msg;
             }
         }

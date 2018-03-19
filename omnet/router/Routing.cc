@@ -63,7 +63,7 @@ void Routing::handleMessage(cMessage *msg)
     }
     else if (data->getTtl() == 0) {
         ev << this->getFullPath() << "  TTL = 0. Msg deleted" << endl;
-        Statistic::instance()->setLost(simTime(), data->getSrcNode(), data->getDstNode(), data->getFlow_id());
+        Statistic::instance()->setLost(simTime(), data->getSrcNode(), data->getDstNode(), data->getFlow_id(), data->getBitLength());
         delete msg;
     }
     else { // Tant in com out

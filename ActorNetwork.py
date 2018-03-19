@@ -34,6 +34,7 @@ class ActorNetwork(object):
         self.h_acti = relu
         if DDPG_config['HACTI'] == 'selu':
             self.h_acti = selu
+        
 
         K.set_session(sess)
 

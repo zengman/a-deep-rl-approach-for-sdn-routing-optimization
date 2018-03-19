@@ -1,11 +1,11 @@
 {
     "ACTIVE_NODES": 35,
     "ACTUM": "NEW",
-    "BATCH_SIZE": 50,
+    "BATCH_SIZE": 32,
     "BN": "reward",
-    "BUFFER_SIZE": 2000,
+    "BUFFER_SIZE": 1600,
     "ENV": "label",
-    "EPISODE_COUNT": 100,
+    "EPISODE_COUNT": 10,
     "EXPLORE": 0.8,
     "GAMMA": 0.99,
     "HACTI": "selu",
@@ -14,7 +14,7 @@
     "LRA": 0.0001,
     "LRC": 0.001,
     "MAX_DELTA": 0.1,
-    "MAX_STEPS": 10,
+    "MAX_STEPS": 100,
     "MU": 0.0,
     "PRAEMIUM": "AVG",
     "PRINT": false,
@@ -25,5 +25,5 @@
     "TAU": 0.001,
     "THETA": 0.2,
     "TRAFFIC": "CSV",
-    "FLOW_NUM":5
+    "FLOW_NUM":10
 }

@@ -45,7 +45,7 @@ class Traffic():
         
     def csv_traffic(self):
         t = np.full((self.flow_num, 4), -1.0, dtype=float)
-        df=pd.read_csv('./flows.csv', header=None, sep=',')
+        df=pd.read_csv('./new_action/flows.csv', header=None, sep=',')
         data = df.head(self.flow_num)
         for i in range(self.flow_num):
             t[i,:] = list(data.ix[i,:])
@@ -53,6 +53,7 @@ class Traffic():
         t[:,0] -= 1
         t[:,1] -= 1
         print(t[:,2])
+        # t[:,3] += 30
         return np.c_[a,t]
         # with open('./flows.csv', 'r') as file:
         #     string = file.readline().strip().strip(',')

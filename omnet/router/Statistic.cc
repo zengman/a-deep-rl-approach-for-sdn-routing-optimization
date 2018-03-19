@@ -39,6 +39,8 @@ Statistic::Statistic() {
     DropsV = vector<vector<vector<double> > > (100, vector<vector<double> >(100, vector<double>(100,0)));
     drops = 0;
     flow_id = 0;
+    Numpackets =  vector<long int>(100,0);
+    SendPackets =  vector<long int>(100,0);
 
 
 
@@ -66,14 +68,19 @@ void Statistic::setRouting(int src, int dst, double r) {
 
 }
 
-void Statistic::infoTS(simtime_t time) {
+void Statistic::infoTS(simtime_t time, int numpackets, int flow_id, int size) {
     if (time > END and collect) {
         collect = false;
         cout<<"info"<<endl;
-        printStats();
+        printStats(time);
     }
     if (time < INI and not collect)
         collect = true;
+        Numpackets[flow_id] += size;
+        SendPackets[flow_id] += size;
+
+//        cout<<"all size="<<Numpackets[flow_id]<<endl;
+
 }
 
 //void Statistic::setDelay(simtime_t time, int flow_id, double d) {
@@ -103,10 +110,13 @@ void Statistic::setTraffic(simtime_t time, int src, int dst, double t) {
         (Traffic)[src][dst].push_back(t);
 }
 
-void Statistic::setLost(simtime_t time, int n, int p, int flow_id) {
+void Statistic::setLost(simtime_t time, int n, int p, int flow_id, int size) {
     if (time > INI and collect) {
 //        drops++;
         (DropsV)[flow_id][n][p]++;
+        Numpackets[flow_id] -= size;
+//        cout<<"all="<<SendPackets[flow_id]<<",real="<<Numpackets[flow_id]<<endl;
+
 
     }
 }
@@ -158,7 +168,7 @@ void Statistic::setFlowId(int n){
 }
 
 
-void Statistic::printStats() {
+void Statistic::printStats(simtime_t time) {
     string genString;
     switch (genT) {
         case 0: // Poisson
@@ -225,6 +235,8 @@ void Statistic::printStats() {
     // features.push_back(drops/steps);
 
 
+
+
     ifstream myfile (folderName + "/Traffic.txt");
     Flow_info = vector<vector<int>  > (100, vector<int>(100));
     vector<double> df;
@@ -262,6 +274,46 @@ void Statistic::printStats() {
     // myfile_flow << endl;
     // myfile_flow.close();
 
+    // bandwidth
+    vector<double> features_bw;
+   for (int i = 0; i < flow_num; i++) {
+//       for (int j = 0; j < numTx; j++) {
+
+          long double datalength = Numpackets[i]/(1024*1024);
+//          int src = Flow_info[i][0];
+//          int dst = Flow_info[i][1];
+          if (datalength == 0)
+              features_bw.push_back(0);
+          else
+              features_bw.push_back((datalength)/time);
+//              cout<<"etime = "<<time;
+//       }
+   }
+
+   // Print file
+   ofstream myfile_bw;
+   string filename_bw;
+
+   // Instant
+   filename_bw = folderName + "/Bandwidth.txt";
+   myfile_bw.open (filename_bw, ios::out | ios::trunc );
+   for (unsigned int i = 0; i < features_bw.size(); i++ ) {
+       double d = features_bw[i];
+
+       myfile_bw  << d << ",";
+   }
+
+   myfile_bw << endl;
+   myfile_bw.close();
+
+
+
+
+
+
+
+
+
      // Delay
     int steps = (SIMTIME/1000)+50;
     for (int i = 0; i < flow_num; i++) {
@@ -295,7 +347,7 @@ void Statistic::printStats() {
     myfile_delay.open (filename, ios::out | ios::trunc );
     for (unsigned int i = 0; i < features.size(); i++ ) {
         double d = features[i];
-        d = d * 1000 * 1000 * 10 ;
+        d = d * 1000 * 1000;
         myfile_delay  << d << ",";
     }
     myfile_delay << endl;
@@ -325,9 +377,14 @@ void Statistic::printStats() {
     vector<double> features2;
     for (int i = 0; i < flow_num; i++) {
     //    for (int j = 0; j < numTx; j++) {
-           int src = Flow_info[i][0];
-           int dst = Flow_info[i][1];
-           features2.push_back((DropsV)[i][src][dst]/steps);
+//           int src = Flow_info[i][0];
+//           int dst = Flow_info[i][1];
+//           features2.push_back((DropsV)[i][src][dst]/steps);
+           long double sendp = SendPackets[i]/(1024*1024);
+           long double realp = Numpackets[i]/(1024*1024);
+           long double rate =1-(realp/sendp);
+//           cout<<"send ="<<SendPackets[i]<<", real="<<Numpackets[i]<<endl;
+           features2.push_back(rate);
     //    }
     }
     // features2.push_back(drops/steps);
@@ -378,7 +435,7 @@ void Statistic::printStats() {
     myfile3.open (filename3, ios::out | ios::trunc );
     for (unsigned int i = 0; i < features3.size(); i++ ) {
         double d = features3[i];
-        d = d * 1000 * 1000 * 10;
+        d = d * 1000 * 1000;
         myfile3  << d << ",";
     }
     myfile3 << endl;

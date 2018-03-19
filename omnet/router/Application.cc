@@ -62,8 +62,9 @@ void Application::handleMessage(cMessage *msg)
 //        genT = 0;
         switch (genT) {
             case 0: // Poisson
-                size = exponential(10000) +1024*2;
+                size = exponential(10000);
                 if (size > 73728) size = 73728;
+//                if(size < 4096) size = 4096;
 
 //                if (size < 4096) size = 4096;
                 break;
@@ -99,7 +100,7 @@ void Application::handleMessage(cMessage *msg)
 
         numPackets++;
         Statistic::instance()->setTraffic(simTime(), id, dest, size);
-        Statistic::instance()->infoTS(simTime());
+        Statistic::instance()->infoTS(simTime(), numPackets, flow_id,size);
 
 
         if (simTime() < MAXSIM) {
@@ -111,8 +112,8 @@ void Application::handleMessage(cMessage *msg)
             }
             else{
 //                etime = exponential(1.0/bandwidth);
-                etime = (1/bandwidth);
-//                etime = size/(bandwidth*1024*1024);
+//                etime = (1/bandwidth);
+                etime = size/(bandwidth*1024*1024);
 
             }
             scheduleAt(simTime() + etime, msg);

@@ -22,6 +22,7 @@ OMDELAY = 'Delay.txt'
 # OMDBW = 'Bandwidth.txt'
 OMPLR = 'PacketLossRate.txt'
 OMJITTER = 'Jitter.txt'
+BANDWIDTH = 'Bandwidth.txt'
 ALLLOG = 'allLog.txt'
 TRAFFICLOG = 'TrafficLog.csv'
 BALANCINGLOG = 'BalancingLog.csv'
@@ -105,6 +106,12 @@ def rl_state(env):
             MaxMinNormalization(matrix_to_rl(env.env_J)), \
             MaxMinNormalization(matrix_to_rl(env.env_L))\
             ))
+        # temp = np.concatenate((
+        #     softmax(matrix_to_rl(env.env_Bw)), \
+        #     softmax(matrix_to_rl(env.env_D)), \
+        #     softmax(matrix_to_rl(env.env_J)), \
+        #     softmax(matrix_to_rl(env.env_L))\
+        #     ))
         return temp
 
 def rl_reward(env, model, data_mean, data_std):
@@ -386,7 +393,9 @@ class OmnetLinkweightEnv():
         self.env_Path = []
         self.counter = 0
         self.env_flow_R = []
+        self.reward = 0
         self.env_choice = np.full(self.flow_num, 0, dtype=int) # 每条流的路径选择
+       
     
     def upd_env_T(self, matrix):
         self.env_T = np.asarray(matrix)
@@ -476,18 +485,22 @@ class OmnetLinkweightEnv():
     #     np.fill_diagonal(self.env_D, -1)
     def upd_env_D(self, vector):
         self.env_D = np.asarray(vector)
+        print('avg-delay=',self.env_D.mean())
 
     def upd_env_L(self, vector):
         self.env_L = np.asarray(vector)
+        print('avg-loss=',self.env_L.mean())
 
     def upd_env_J(self, vector):
         self.env_J = np.asarray(vector)
+        print('avg-jitter=',self.env_J.mean())
 
     def upd_env_Bw(self, vector):
         Df = self.env_T[:,4]
         df = self.env_bw_original
-        dd = df*0.85
-        new  =( df + (Df-df)*vector )
+        dd = df
+        new  =( dd + (Df-df)*vector )
+
         V = new.copy()
         for i in range(self.flow_num):
             (n , D, d ) =(new[i], Df[i], df[i])
@@ -505,9 +518,9 @@ class OmnetLinkweightEnv():
         choice = np.full(self.flow_num, 0, dtype=int)
         for i in range(self.flow_num):
             x = vector[i]
-            if x >= 0 and x < (0.1/3):
+            if x >= 0 and x < (1/3):
                 choice[i] = 0
-            elif x >= (0.1/3) and x < (0.2/3):
+            elif x >= (1/3) and x < (2/3):
                 choice[i] = 1
             else: 
                 choice[i] = 2
@@ -577,7 +590,7 @@ class OmnetLinkweightEnv():
     def render(self):
         return
 
-    def reset(self, easy=False):
+    def reset(self, model, data_mean, data_std,easy=False,):
         if self.counter != 0:
             return None
         # self.logheader()
@@ -590,7 +603,7 @@ class OmnetLinkweightEnv():
         # traffic
         self.env_T = np.asarray(self.tgen.generate())
         self.env_Bw = self.env_T[:,3]
-        self.env_bw_original = self.env_Bw
+        self.env_bw_original = self.env_Bw.copy()
         vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
         self.set_env_R_K(3)
 
@@ -611,12 +624,17 @@ class OmnetLinkweightEnv():
         om_output_delay = file_to_csv(self.folder + OMDELAY)
         om_output_jitter = file_to_csv(self.folder + OMJITTER)
         om_output_plr = file_to_csv(self.folder + OMPLR)
+        om_output_bandwidth = file_to_csv(self.folder + BANDWIDTH)
 
         self.upd_env_D(csv_to_vector(om_output_delay, 0, self.flow_num)) # 更新delay
         self.upd_env_L(csv_to_vector(om_output_plr, 0, self.flow_num)) #packt loss
         self.upd_env_J(csv_to_vector(om_output_jitter, 0, self.flow_num))
+        self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
         self.my_log_header()
         self.log_everything()
+        self.reward = rl_reward(self, model, data_mean, data_std)
+        print('reset-reward',self.reward)
+
 
         return rl_state(self) # if STATUM==T, return self.env_S 
     
@@ -627,14 +645,13 @@ class OmnetLinkweightEnv():
         self.counter += 1
         
         # self.upd_env_W(action[:self.graph.number_of_edges()]) # 特殊函数处理过后的概率数字作为weights
-
-        
         bd = action[self.flow_num:]
-        self.env_bw_original = bd
+        # self.env_bw_original = bd
         self.upd_env_Bw(bd) # update Bandwidth
-
         self.upd_env_T_tr(self.env_Bw)
+        vector_to_file(matrix_to_log_v(self.env_Bw), self.folder + 'bandwidth_store.txt','a')
         self.upd_env_choice(action[:self.flow_num])
+        print('choice :', self.env_choice)
         self.env_flow_R = []
         for i in range(self.flow_num):
             choice = self.env_choice[i]
@@ -663,38 +680,32 @@ class OmnetLinkweightEnv():
         om_output_delay = file_to_csv(self.folder + OMDELAY)
         om_output_jitter = file_to_csv(self.folder + OMJITTER)
         om_output_plr = file_to_csv(self.folder + OMPLR)
+        om_output_bandwidth = file_to_csv(self.folder + BANDWIDTH)
 
         self.upd_env_D(csv_to_vector(om_output_delay, 0, self.flow_num)) # 更新delay
         self.upd_env_L(csv_to_vector(om_output_plr, 0, self.flow_num)) #packt loss
         self.upd_env_J(csv_to_vector(om_output_jitter, 0, self.flow_num))
+        self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
        
         # self.upd_env_S()
 
         reward = rl_reward(self, model, data_mean, data_std)
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
-        # cur_state = rl_state(self) # env_S
-
-        # log = np.concatenate(([self.counter], matrix_to_log_v(self.env_T), \
-        # matrix_to_log_v(self.env_Bw), matrix_to_log_v(self.env_D), matrix_to_log_v(self.env_J), \
-        # matrix_to_log_v(self.env_L),\
-        # [-reward])
-        # vector_to_file(log, self.folder + WHOLELOG, 'a')
         vector_to_file(matrix_to_log_v(self.env_D), self.folder + 'Dealy_store.txt','a')
         # vector_to_file(matrix_to_log_v(self.env_W), self.folder + 'weights.csv','a')
         vector_to_file(matrix_to_log_v(self.env_J), self.folder + 'Jitter_store.txt','a')
         vector_to_file(matrix_to_log_v(self.env_L), self.folder + 'loss_store.txt','a')
         # vector_to_file(matrix_to_log_v(self.env_Rn), self.folder + 'Rn.csv','a')
-        vector_to_file(matrix_to_log_v(self.env_Bw), self.folder + 'bandwidth.txt','a')
-        vector_to_file(matrix_to_omnet_v(self.env_T), 'ts.txt', 'w')
-
+        # vector_to_file(matrix_to_omnet_v(self.env_T), 'ts.txt', 'w')
+        # reward =reward*100
         new_state = rl_state(self) 
 
         self.log_everything()
         # return new status and reward
         return new_state, reward, 0
 
-
+    
     def easystep(self, action):
         self.counter += 1
 
@@ -711,6 +722,7 @@ class OmnetLinkweightEnv():
         om_output = file_to_csv(self.folder + OMDELAY)
         self.upd_env_D(csv_to_matrix(om_output, self.ACTIVE_NODES))
         self.upd_env_L(csv_to_lost(om_output))
+
 
         reward = rl_reward(self)
 
