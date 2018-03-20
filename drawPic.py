@@ -21,14 +21,20 @@ def get_reward(atype):
 
 yt_list = get_reward('t')
 yu_list = get_reward('u')
-ydrl_list = [4.76007384330578,4.78295708,4.768407162857143,0,0,0,0,0,0,0]
+ydrl_list = []
+ydrl_list.append(4.803071391605264) # 5
+ydrl_list.append(4.780557646105769)  # 10
+ydrl_list.append(4.795260636086956) # 15
+ydrl_list.append(4.814918592293144)# 20
+# ydrl_list.append()
+# ydrl_list = [,4.783476308490566,4.7684861658571425,4.72175884,0,0,0,0,0,0]
 # print(yt_list)
 # print(yu_list)
 # draw
 plt.figure(figsize=(13, 7))
 plt.plot(x_list, yt_list, linestyle='--', marker='o',color="blue", linewidth=2, label=' Throughput ')
 plt.plot(x_list, yu_list, linestyle='-', marker='o',color="green", linewidth=2, label=' Utility ')
-plt.plot(x_list, ydrl_list, linestyle=':' , marker='o',color="black", linewidth=2, label=' DRL ')
+plt.plot([5,10,15,20], ydrl_list, linestyle=':' , marker='o',color="black", linewidth=2, label=' DRL ')
 
 plt.xlabel("Number of Flows")
 plt.ylabel("Mean MOS Value")

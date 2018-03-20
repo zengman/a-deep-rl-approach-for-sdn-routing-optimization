@@ -5,7 +5,7 @@
     "BN": "reward",
     "BUFFER_SIZE": 1600,
     "ENV": "label",
-    "EPISODE_COUNT": 10,
+    "EPISODE_COUNT": 4,
     "EXPLORE": 0.8,
     "GAMMA": 0.99,
     "HACTI": "selu",
@@ -25,5 +25,5 @@
     "TAU": 0.001,
     "THETA": 0.2,
     "TRAFFIC": "CSV",
-    "FLOW_NUM":10
+    "FLOW_NUM":25
 }
