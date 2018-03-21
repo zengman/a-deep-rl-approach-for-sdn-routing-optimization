@@ -12,11 +12,15 @@ number = sys.argv[1]
 folder = 'runs/'+str(number)+'/'
 # folder = 'new_action/'+str(number)+'/'
 flow_num = 5
-step = 0
+step = sys.argv[2]
 # avg-delay,jitter,loss
-def avg(filename,folder):
+def avg(filename,folder,step):
     df = pd.read_csv(folder+filename, header=None, sep=',')
-    d = np.asarray(df)
+    if int(step) == 0:
+        d = np.asarray(df)
+    else:
+        step = int(step)
+        d = np.asarray(df.head(step))
     # string = str(d.mean())
     print(d.mean())
     
@@ -31,18 +35,19 @@ def avg_band(folder):
     print(d.sum()/length)
     return length
 
-def all_print(folder):
+def all_print(folder,step):
     # filename = 'all_avg.txt'
-    avg(DELAY,folder)
-    avg(JITTER,folder)
-    avg(LOSS,folder)
-    avg(REWARD,folder)
+    avg(DELAY,folder,step)
+    avg(JITTER,folder,step)
+    avg(LOSS,folder,step)
+    avg(REWARD,folder,step)
     # vector_to_file(avg(DELAY), folder + filename, 'a')
     # vector_to_file(avg(JITTER), folder + filename, 'a')
     # vector_to_file(avg(LOSS), folder + filename, 'a')
-    step = avg_band(folder)
+    stepp = avg_band(folder)
     print(step)
-all_print(folder)
+    print(stepp)
+all_print(folder,step)
 
 
     

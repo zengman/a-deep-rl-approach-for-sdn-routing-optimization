@@ -407,6 +407,7 @@ class OmnetLinkweightEnv():
         self.env_W = np.asarray(softmax(vector))
 
     def set_env_R_K(self,k=3):
+        '''拿到每条流得到的path集合'''
         sour_des = self.env_T[:,1:3]
         all_path = []
         for x in sour_des:
@@ -416,6 +417,7 @@ class OmnetLinkweightEnv():
             all_path.append(path)
         self.env_Path = all_path
        
+
 
     def upd_env_R_from_k_flow(self, flow_id,choice):
         self.upd_env_R()
@@ -608,7 +610,6 @@ class OmnetLinkweightEnv():
         self.set_env_R_K(3)
 
         self.env_chocie = np.random.randint(low=0,high=4,size=1)
-        
         self.env_flow_R = []
         for i in range(self.flow_num):
             choice = self.env_choice[i]

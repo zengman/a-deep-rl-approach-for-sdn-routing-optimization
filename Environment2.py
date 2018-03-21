@@ -785,17 +785,17 @@ class OmnetLinkweightEnv():
 
     def end(self):
         return
-folder = "new_action/flow10_/"
+mainfolder = "topo/t2/"
 with open('DDPG.json') as jconfig:
     DDPG_config = json.load(jconfig)
     DDPG_config['EXPERIMENT'] = setup_exp()
 model, data_mean, data_std = NN_training()
 for i in range(0,10):
-    DDPG_config['FLOW_NUM'] = (i+1) * 5
-    env = OmnetLinkweightEnv(DDPG_config, folder)
+    DDPG_config['FLOW_NUM'] = (i+1)*5
+    env = OmnetLinkweightEnv(DDPG_config, mainfolder)
     env.choice_id = i
     env.altype = 0
-    folder = "new_action/fd"+str(i)+"_t/"
+    folder = mainfolder+"fd"+str(i)+"_t/"
     os.makedirs(folder, exist_ok=True)
     with open(folder + 'folder.ini', 'w') as ifile:
         ifile.write('[General]\n')
@@ -805,7 +805,7 @@ for i in range(0,10):
     env.folder = folder
     env.other_up(env.flow_num,model, data_mean, data_std)
     env.altype = 1
-    folder = "new_action/fd"+str(i)+"_u/"
+    folder = mainfolder+"fd"+str(i)+"_u/"
     os.makedirs(folder, exist_ok=True)
     with open(folder + 'folder.ini', 'w') as ifile:
         ifile.write('[General]\n')

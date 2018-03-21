@@ -45,7 +45,7 @@ class Traffic():
         
     def csv_traffic(self):
         t = np.full((self.flow_num, 4), -1.0, dtype=float)
-        df=pd.read_csv('./new_action/flows.csv', header=None, sep=',')
+        df=pd.read_csv('./topo/germany50/flows.csv', header=None, sep=',')
         data = df.head(self.flow_num)
         for i in range(self.flow_num):
             t[i,:] = list(data.ix[i,:])

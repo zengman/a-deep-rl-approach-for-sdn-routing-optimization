@@ -1,5 +1,5 @@
 {
-    "ACTIVE_NODES": 35,
+    "ACTIVE_NODES": 50,
     "ACTUM": "NEW",
     "BATCH_SIZE": 32,
     "BN": "reward",
@@ -25,5 +25,5 @@
     "TAU": 0.001,
     "THETA": 0.2,
     "TRAFFIC": "CSV",
-    "FLOW_NUM":25
+    "FLOW_NUM":5
 }
