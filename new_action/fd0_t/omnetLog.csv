@@ -7,3 +7,4 @@ up network `NetworkAll'...,<!> Error in component
   Cannot overwrite non-default value of
    parameter `delay' at /Users/byr/Documents/zm/a-deep-rl-approach-for-sdn-routing-optimization/omnet/router/NetworkAll.ned:27 at /Users/byr/Documents/zm/a-deep-rl-approach-for-sdn-routing-optimization/omnet/router/NetworkAll.ned:43.,undisposed object: (cDatarateChannel) .NetworkAll.channel -- check module destructor,End.
 ok
+ok

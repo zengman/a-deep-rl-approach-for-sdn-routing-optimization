@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-main = './topo/ta2/'
+main = './new_action/'
 PATH = main+'path.csv'
 BAND_THR = main+'bw_thr.csv'
 BAND_UTILITY = main+'bw_utiliy.csv'

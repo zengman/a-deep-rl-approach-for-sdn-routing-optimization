@@ -785,7 +785,7 @@ class OmnetLinkweightEnv():
 
     def end(self):
         return
-mainfolder = "topo/ta2/"
+mainfolder = "new_action/"
 with open('DDPG.json') as jconfig:
     DDPG_config = json.load(jconfig)
     DDPG_config['EXPERIMENT'] = setup_exp()
