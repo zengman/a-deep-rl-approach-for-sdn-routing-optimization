@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
-PATH = './new_action/path.csv'
-BAND_THR = './new_action/bw_thr.csv'
-BAND_UTILITY = './new_action/bw_utiliy.csv'
-PATH_CHOICE_U = './new_action/path_chosen_utility.csv'
-PATH_CHOICE_T = './new_action/path_chosen_thr.csv'
-WEIGHT = './new_action/link_bandwidth.csv'
+main = './topo/ta2/'
+PATH = main+'path.csv'
+BAND_THR = main+'bw_thr.csv'
+BAND_UTILITY = main+'bw_utiliy.csv'
+PATH_CHOICE_U  = main+'path_chosen_utility.csv'
+PATH_CHOICE_T = main+'path_chosen_thr.csv'
+WEIGHT = main+'link_bandwidth.csv'
 
-FLOW = './new_action/flows.csv'
+FLOW = main+'flows.csv'
 
 
 class OtherAction():
@@ -29,8 +30,9 @@ class OtherAction():
         id = self.id
         for i in range(self.flow_num):
             
-            path_id = choice.iloc[id][i]
+            path_id = choice.iloc[id][i]-1
             path = self.read_path(path_id)
+            # print(path_id)
             choice_path.append(path)
         return choice_path
 

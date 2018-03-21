@@ -1,11 +1,11 @@
 {
-    "ACTIVE_NODES": 50,
+    "ACTIVE_NODES": 65,
     "ACTUM": "NEW",
     "BATCH_SIZE": 32,
     "BN": "reward",
     "BUFFER_SIZE": 1600,
     "ENV": "label",
-    "EPISODE_COUNT": 4,
+    "EPISODE_COUNT": 2,
     "EXPLORE": 0.8,
     "GAMMA": 0.99,
     "HACTI": "selu",
