@@ -42,10 +42,10 @@ class Traffic():
         self.static = None
         self.total_ou = OU(1, capacity/2, 0.1, capacity/2)
         self.nodes_ou = OU(self.nodes_num**2, 1, 0.1, 1)
-        
+
     def csv_traffic(self):
         t = np.full((self.flow_num, 4), -1.0, dtype=float)
-        df=pd.read_csv('./topo/germany50/flows.csv', header=None, sep=',')
+        df=pd.read_csv('./topo/ta2/flows.csv', header=None, sep=',')
         data = df.head(self.flow_num)
         for i in range(self.flow_num):
             t[i,:] = list(data.ix[i,:])

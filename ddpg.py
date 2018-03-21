@@ -18,7 +18,7 @@ from ActorNetwork import ActorNetwork
 from CriticNetwork import CriticNetwork
 from OU import OU
 from helper import setup_exp, setup_run, parser, pretty, scale
-from Reward_QoE import NN_training 
+from Reward_QoE import NN_training
 from avgdata import all_print
 
 def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 means Train, 0 means simply Run
@@ -76,7 +76,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
     sess = tf.Session(config=config)
     from keras import backend as K
     K.set_session(sess)
-    
+
 
     actor = ActorNetwork(sess, state_dim, action_dim, DDPG_config)
     critic = CriticNetwork(sess, state_dim, action_dim, DDPG_config)
@@ -123,11 +123,11 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             # add action = (weight, bandwidth)
             # print('a_t_original=\n',a_t_original)
             # print('s_t=\n',s_t)
-            
+
             # return type = numpy array
             # numpy.shape?? 多维=行数，一维=个数
             # numpy.reshape(i,j) Gives a new shape to an array without changing its data. 数据不变，改变了行数列数
-            
+
             if train_indicator and epsilon > 0 and (step % 100) // 10 != 9:  # init step = 0
                 noise_t[0] = epsilon * ou.evolve() # evolove() 高斯分布之类的数学过程
                 # train_indicator == 1 means train
@@ -136,18 +136,18 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             n = noise_t[0]
             # a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
             a_t[0] = a
-            
-            
-            # if 0<(a+n)<1, return a+n, else return a-n 
+
+
+            # if 0<(a+n)<1, return a+n, else return a-n
 
             # numpy.clip(min,max) the elemnets who larger than max, will be replace by max, all elemnts between min and max
-            
+
             # execute action
-            s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std) 
-            
+            s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std)
+
 
             buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
-            # s_t initial state 
+            # s_t initial state
             scale = lambda x: x
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)
@@ -198,7 +198,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             if train_indicator and len(batch) >= BATCH_SIZE:
                 vector_to_file([L2[x] for x in ltm], folder + 'weightsL2' + 'Log.csv', 'a')
 
-            
+
             # vector_to_file(noise_t[0], folder + 'noiseLog.csv', 'a')
 
             if 'PRINT' in DDPG_config.keys() and DDPG_config['PRINT']:
@@ -241,32 +241,11 @@ if __name__ == "__main__":
     # QoE training
     model, data_mean, data_std = NN_training()
     # VANILLA
-    if len(sys.argv) == 1:
-        with open('DDPG.json') as jconfig:
-            DDPG_config = json.load(jconfig)
-        DDPG_config['EXPERIMENT'] = setup_exp()
-        playGame(DDPG_config, model, data_mean, data_std, train_indicator=1)
+    with open('DDPG.json') as jconfig:
+        DDPG_config = json.load(jconfig)
+    DDPG_config['EXPERIMENT'] = setup_exp()
+    DDPG_config['FLOW_NUM'] = int(sys.argv[1])
+    print(DDPG_config['FLOW_NUM'])
+    #return
+    playGame(DDPG_config, model, data_mean, data_std, train_indicator=1)
     # PLAY
-    elif len(sys.argv) == 3:
-        # WATCH OUT: it appends to *Log.csv files
-        if sys.argv[1] == 'play':
-            with open(sys.argv[2] + '/' + 'DDPG.json') as jconfig:
-                DDPG_config = json.load(jconfig)
-            # here remove double slash at end if present
-            experiment = sys.argv[2] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
-            DDPG_config['EXPERIMENT'] = experiment
-            playGame(DDPG_config, model, data_mean, data_std, train_indicator=0)
-    # PLAY WITH FILE TRAFFIC
-    elif len(sys.argv) == 4:
-        # WATCH OUT: it appends to *Log.csv files
-        if sys.argv[1] == 'play':
-            with open(sys.argv[2] + '/' + 'DDPG.json') as jconfig:
-                DDPG_config = json.load(jconfig)
-            # here remove double slash at end if present
-            experiment = sys.argv[2] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
-            DDPG_config['EXPERIMENT'] = experiment
-#             DDPG_config['EPISODE_COUNT'] = 1
-#             DDPG_config['MAX_STEPS'] = 1
-            if DDPG_config['TRAFFIC'] == 'DIR:':
-                DDPG_config['TRAFFIC'] += sys.argv[3]
-            playGame(DDPG_config, model, data_mean, data_std, train_indicator=0)

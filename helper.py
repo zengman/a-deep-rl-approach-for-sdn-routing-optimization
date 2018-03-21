@@ -45,8 +45,8 @@ def setup_exp(experiment=''):
 
 def setup_run(DDPG_config):
     folder = DDPG_config['EXPERIMENT']
-    epoch = 't%.6f/' % time.time()
-    folder += epoch.replace('.', '')
+    epoch = 't%.6f' % time.time()
+    folder += epoch.replace('.', '') + '_flownum_' + str(DDPG_config['FLOW_NUM']) + '/'
     os.makedirs(folder, exist_ok=True)
 
     with open(folder + 'folder.ini', 'w') as ifile:
@@ -174,9 +174,9 @@ def Normalizing(x, Max, Min):
     x = (x - Min) / (Max - Min)
     return x
 
-def MaxMinNormalization(array):  
+def MaxMinNormalization(array):
     Max = np.max(array)
     Min = np.min(array)
     new_array = [Normalizing(x, Max, Min) for x in array]
-    return new_array;  
+    return new_array;
 
