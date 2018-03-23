@@ -48,11 +48,11 @@ ydrl_g_list.append(4.73517361625) # 10
 ydrl_g_list.append(4.789803924299999) #15
 ydrl_g_list.append(4.7894317771) #20
 ydrl_g_list.append(4.767126844) # 25
-ydrl_g_list.append(5) #
-ydrl_g_list.append(5) #
-ydrl_g_list.append(5) #
-ydrl_g_list.append(5) #
-ydrl_g_list.append(4.8) #
+ydrl_g_list.append(4.74716855025) #
+ydrl_g_list.append(4.76658674725) #
+ydrl_g_list.append(4.769383469100001) #
+ydrl_g_list.append(4.75813417895) #
+ydrl_g_list.append(4.736234927000001) # 50
 
 ydrl_t_list = []
 
@@ -60,12 +60,13 @@ ydrl_t_list.append(4.7959365462) # 5
 ydrl_t_list.append(4.7895789100499995) # 10
 ydrl_t_list.append(4.7530363366) # 15
 ydrl_t_list.append(4.7680855298) # 20
-ydrl_t_list.append(5)
-ydrl_t_list.append(5)
-ydrl_t_list.append(5)
-ydrl_t_list.append(5)
-ydrl_t_list.append(5)
-ydrl_t_list.append(5)
+ydrl_t_list.append(4.775637066) # 25
+ydrl_t_list.append(4.78039270355) # 30
+ydrl_t_list.append(4.7451019763) #35
+ydrl_t_list.append(4.79479086385) #40
+ydrl_t_list.append(4.77627153605) # 45
+ydrl_t_list.append(4.78383346545) #50
+
 
 
 ydiff_i_list = []
@@ -98,9 +99,9 @@ plt.rc('legend', fontsize=13)    # legend fontsize
 # plt.rc('figure', titlesize=BIGGER_SIZE) 
 
 plt.xlim(5,50) # 限定横轴的范围
-plt.ylim(0, 25) # 限定纵轴的范围
+plt.ylim(0, 7) # 限定纵轴的范围
 plt.legend()
-# foo_fig = plt.gcf() # 'get current figure'
-# foo_fig.savefig('pic1.eps', format='eps', dpi=1000)
+foo_fig = plt.gcf() # 'get current figure'
+foo_fig.savefig('pic2.eps', format='eps', dpi=1000)
 plt.show()
 
