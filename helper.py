@@ -45,8 +45,10 @@ def setup_exp(experiment=''):
 
 def setup_run(DDPG_config):
     folder = DDPG_config['EXPERIMENT']
-    epoch = 't%.6f/' % time.time()
-    folder += epoch.replace('.', '')
+    id = DDPG_config['id']
+    epoch = 't%.6f' % time.time()
+    # epoch = 'test'
+    folder += epoch.replace('.', '') +'_' +str(id) +'_flow_num_' + str(DDPG_config['FLOW_NUM']) + '/'
     os.makedirs(folder, exist_ok=True)
 
     with open(folder + 'folder.ini', 'w') as ifile:

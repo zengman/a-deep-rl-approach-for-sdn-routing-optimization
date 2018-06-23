@@ -69,12 +69,20 @@ void TrafficController::initialize()
 //        getTrafficFromFile(Flow_info, Bandwidth);
 
         for (int j = 0; j < flow_num; j++){
-            getTrafficInfo(id, j, flowRatio);
-            for (int i = 0; i < numNodes; i++) {
+            double bandwidth = 0;
+            double bandwidth_df=0;
+            int src=0,dest=0;
+            Statistic::instance()->setNumNodes(numNodes);
+            Statistic::instance()->setNumFlow(flow_num);
+            Statistic::instance()->setFolder(folderName);
+            Statistic::instance()->getTrafficInfo(j,&bandwidth, &src, &dest, &bandwidth_df);
+            if(src == id ){
                 ControlPacket *data = new ControlPacket("trafficInfo");
-                data->setData(flowRatio[i]);
+                //cout<<"traffic flow_Id="<<j<<",src"<<src<<",dest="<<dest<<endl;
+                data->setData(bandwidth);
+                data->setBandwidth_df(bandwidth_df);
                 data->setFlow_id(j);
-                send(data, "out", i);
+                send(data, "out", dest);
             }
 
         }
@@ -88,6 +96,7 @@ void TrafficController::handleMessage(cMessage *msg)
 {
     // TODO - Generated method body
 }
+
 
 void TrafficController::getTrafficInfo(int id, int flow_id, double rData[]) {
      for(int i = 0; i < numNodes; i++){

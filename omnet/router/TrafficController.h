@@ -25,7 +25,7 @@ using namespace std;
 #include <sstream>
 #include <cstring>
 #include <string>
-
+#include "Statistic.h"
 /**
  * TODO - Generated class
  */
@@ -40,8 +40,6 @@ class TrafficController : public cSimpleModule
         int flow_num;
         vector< vector <int> > Flow_info;
         vector<double> Bandwidth;
-
-
 
 
     protected:

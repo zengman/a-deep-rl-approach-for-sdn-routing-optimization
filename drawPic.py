@@ -6,8 +6,10 @@ import sys
 
 x_list = [5,10,15,20,25,30,35,40,45,50]
 
-
-folder = 'new_action/fd'
+'''
+读取另外两个算法的内容，并画图
+'''
+folder = 'sampler/fd'
 # atype = sys.argv[1]
 filename = 'rewardLog.txt'
 def get_reward(atype):
@@ -53,7 +55,7 @@ plt.rc('legend', fontsize=13)    # legend fontsize
 # plt.rc('figure', titlesize=BIGGER_SIZE) 
 
 plt.xlim(5,50) # 限定横轴的范围
-plt.ylim(4.70, 4.95) # 限定纵轴的范围
+plt.ylim(min(yu_list), max(yu_list)) # 限定纵轴的范围
 plt.legend()
 foo_fig = plt.gcf() # 'get current figure'
 foo_fig.savefig('pic1.eps', format='eps', dpi=1000)

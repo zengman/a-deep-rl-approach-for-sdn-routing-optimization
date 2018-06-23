@@ -20,4 +20,5 @@ packet ControlPacket {
 
     double data;
     int flow_id;
+    double bandwidth_df;
 }

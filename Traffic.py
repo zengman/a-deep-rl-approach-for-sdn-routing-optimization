@@ -19,8 +19,9 @@ def natural_key(string_):
 
 class Traffic():
 
-    def __init__(self, nodes_num, type, capacity, flow_num):
+    def __init__(self, nodes_num, type, capacity, flow_num, flowfile):
         self.nodes_num = nodes_num
+        self.flowfile = flowfile # flows.csv 的位置
         self.flow_num = flow_num # 流的个数
         self.prev_traffic = None
         self.type = type
@@ -45,15 +46,15 @@ class Traffic():
         
     def csv_traffic(self):
         t = np.full((self.flow_num, 4), -1.0, dtype=float)
-        df=pd.read_csv('./topo/ta2/flows.csv', header=None, sep=',')
+        df=pd.read_csv(self.flowfile, header=None, sep=',')
         data = df.head(self.flow_num)
         for i in range(self.flow_num):
-            t[i,:] = list(data.ix[i,:])
+            t[i,:] = list(data.ix[i,:]) 
         a = np.arange(0,self.flow_num)
         t[:,0] -= 1
         t[:,1] -= 1
-        print(t[:,2])
-        # t[:,3] += 30
+        print('traffic -------')
+     
         return np.c_[a,t]
         # with open('./flows.csv', 'r') as file:
         #     string = file.readline().strip().strip(',')

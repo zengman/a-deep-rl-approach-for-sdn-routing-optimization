@@ -1,4 +1,17 @@
+
+
 # A Deep-Reinforcement Learning Approach for Software-Defined Networking Routing Optimization
+
+### 新添使用说明
+
+1. Traffic.py 修改flows.csv所在文件夹，/topo/ta2/, /topo/india35/, /topo/germany50/
+2. DDPG.json 修改 FLOW_NUM, ACTIVE_NODES
+3. Environment2.py 主要为读取不同算法的oment结果数据， 需要修改topo
+4. omnet/router 修改对应的NetworkAll.ned , ports, matrix 文件为需要的topo
+5. omnetpp.ini 修改模拟的时间
+6. omnet 重新编译， 使用make MODE=Release 替代make
+
+
 
 ###### [1709.07080](https://arxiv.org/abs/1709.07080): Giorgio Stampa, Marta Arias, David Sanchez-Charles, Victor Muntes-Mulero, Albert Cabellos
 
@@ -79,3 +92,5 @@ author: giorgio@ac.upc.edu
 * [Keras](https://keras.io/)
 * [DDPG](https://arxiv.org/abs/1509.02971)
 * [OMNeT++](https://omnetpp.org/)
+
+

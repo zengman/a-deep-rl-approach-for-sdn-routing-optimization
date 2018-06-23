@@ -7,7 +7,7 @@ def NN_training():
     #1 数据输入
     inputfile = 'NN_test_STORE.xlsx'   #excel输入
     # outputfile = 'output.xls' #excel输出
-    modelfile = 'modelweight2.model' #神经网络权重保存
+    modelfile = 'modelweight1.model' #神经网络权重保存
     data = pd.read_excel(inputfile,index='Date',sheet_name=0) #pandas以DataFrame的格式读入excel表
     feature = ['F1','F2','F3','F4'] #影响因素四个
     label = ['L1'] #标签一个，即需要进行预测的值
@@ -65,8 +65,8 @@ def reward_QoE(x1,x2,x3,x4, model, data_mean, data_std):
     reward = NN_pridict(data_state, model, data_mean, data_std)
     print('reward')
     print(reward)
-    # zhognweishu = np.median(reward)
-    # print('中位数:=', zhognweishu)
+    zhognweishu = np.median(reward)
+    print('中位数:=', zhognweishu)
     print('均值', np.mean(reward))
 
     result = np.mean(reward)

@@ -23,7 +23,7 @@ ygu_list = get_reward('u',folderg)
 foldert = './topo/ta2/fd'
 # ytt_list = get_reward('t',foldert)
 ytu_list = get_reward('u',foldert)
-folderi = './new_action/fd'
+folderi = './topo/india35/fd'
 yiu_list = get_reward('u',folderi)
 
 

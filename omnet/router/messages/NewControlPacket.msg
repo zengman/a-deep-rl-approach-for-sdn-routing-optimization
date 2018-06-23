@@ -16,32 +16,8 @@
 //
 // TODO generated message class
 //
-packet DataPacket {
+packet NewControlPacket {
 
-    int srcNode;
-    int dstNode;
-    int flow_id;
-    double bandwidth;
-    double send_delay;
-    double bandwidth_df;
-
-    int ttl;
-    int lastRouter;
-    int l2;
-    int l3;
-    int l4;
-
-    int lastQueue;
-    int q2;
-    int q3;
-    int q4;
-    int q5;
-
-    double lastTS;
-    double t2;
-    double t3;
-    double t4;
-    double t5;
-
-    int routing;
+    double data[];
+    int flow_set[];
 }

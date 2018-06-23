@@ -1,6 +1,14 @@
 import pandas as pd
 import numpy as np
-main = './new_action/'
+
+'''
+对比算法： 读取相应的选择路径和带宽分配等数据
+india35
+ta2 
+germany50
+
+'''
+main = './topo/india35/'
 PATH = main+'path.csv'
 BAND_THR = main+'bw_thr.csv'
 BAND_UTILITY = main+'bw_utiliy.csv'
@@ -8,7 +16,7 @@ PATH_CHOICE_U  = main+'path_chosen_utility.csv'
 PATH_CHOICE_T = main+'path_chosen_thr.csv'
 WEIGHT = main+'link_bandwidth.csv'
 
-FLOW = main+'flows.csv'
+FLOW = main+'flow_test.csv'
 
 
 class OtherAction():
@@ -24,6 +32,7 @@ class OtherAction():
         else:
             self.band = BAND_UTILITY
             self.path_choce_name = PATH_CHOICE_U
+            
     def read_path_choice(self):
         choice  = pd.read_csv(self.path_choce_name, header=None, sep=',')# 第id行数据
         choice_path = []
@@ -61,6 +70,7 @@ class OtherAction():
         t[:,0] -= 1
         t[:,1] -= 1
         print(t[:,2])
+        print(t[:,3])
         return np.c_[a,t]
 
 

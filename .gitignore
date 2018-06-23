@@ -12,3 +12,10 @@ omnet/*/messages/*.cc
 omnet/*/messages/*.h
 omnet/*/NetworkAll*
 traffic/
+runs_2/
+runs_temp/
+runs_india35_6_22/
+rewardset/
+*.model
+store_flows/
+

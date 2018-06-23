@@ -21,4 +21,5 @@ message TimerNextPacket {
     double lambda;
     int flow_id;
     double bandwidth;
+    double bandwidth_df;
 }

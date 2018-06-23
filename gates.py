@@ -1,32 +1,78 @@
 import pandas as pd
 import numpy as np
+mainfolder = './topo/india35/'
+# WEIGHT = mainfolder+'link_bandwidth.csv'
+# def read_weight():
+#     df = pd.read_csv(WEIGHT, header=None, sep=',')
+#     return np.asarray(df)
+# weight = read_weight()
+node = 35
+flow_num = 100
 
-WEIGHT = './topo/germany50/link_bandwidth.csv'
-def read_weight():
-    df = pd.read_csv(WEIGHT, header=None, sep=',')
-    return np.asarray(df)
-weight = read_weight()
-node = 65
-use_weight = np.full((node,node),-1,dtype=int)
-filename = './topo/germany50/ta2.txt'
-def replace_daterate(filename, oldstr,newstr):
-    file_data = ""
-    with open(filename,'r',encoding='utf-8') as f:
-        for line in f:
-            if oldstr in line:
-                line = line.replace(oldstr,newstr)
-            file_data += line
-    with open(filename,'w',encoding='utf-8') as f:
-        f.write(file_data)
-    f.close()
-for i in range(node):
-    for j in range(node):
-        if weight[i][j] != 0 and use_weight[i][j] == -1:
-            print('i = '+str(i)+' j='+str(j)+' v = '+str(weight[i][j]))
-            use_weight[i][j] = weight[i][j]
-            use_weight[j][i] = weight[i][j]
-            oldstr = "sdnnode["+str(i)+"].port++ <--> Channel <--> sdnnode["+str(j)+"].port++;"
-            newstr = "sdnnode["+str(i)+"].port++ <--> Channel{datarate="+str(weight[i][j])+"Mbps;} <--> sdnnode["+str(j)+"].port++;"
-            # replace_daterate(filename, oldstr,newstr)
+'''
+输入folder， 节点个数，流的个数，生成流量矩阵
+'''
+def genFlowsCSV(folder,node,flow_num,csvname):
+    filename = folder + 'flow_test.csv'
+    # a=np.random.randint(10,100,size=[node,node]) 
+    # # 1 step 生成流的源和目的
+    
+    flow_tong = int(flow_num * 0.25) + 1
+    flow_sengxia = flow_num - flow_tong * 2
+    src_dest = np.random.randint(1,node,size=[flow_num,2])
+    # 2 step 生成df 10-50
+    recode = []
+    one = np.random.randint(1,node,size=[5,2]) # 新生成5条
+    for i in range(5):
+        while one[i][0] == one[i][1]:
+            a = np.random.randint(1,node,size=[1,2])
+            one[i][0] = a[0][0]
+            one[i][1] = a[0][1]
+        src_dest[i][0] = one[i][0]
+        src_dest[i][1] = one[i][1]
+        if i == 3 or i == 4:
+            temp = []
+            temp.append(src_dest[i][0])
+            temp.append(src_dest[i][1])
+            recode.append(temp)
+
+
+    cnt = 5
+    for j in range(9):
+        # 每次新生成3条，并且取前面的最后2条重复
+        src_dest[cnt][0] = src_dest[cnt-1][0]
+        src_dest[cnt][1] = src_dest[cnt-1][1]
+        cnt += 1
+        src_dest[cnt][0] = src_dest[cnt-3][0]
+        src_dest[cnt][1] = src_dest[cnt-3][1]
+        cnt += 1
+        src_dest[cnt][0] = src_dest[cnt-5][0]
+        src_dest[cnt][1] = src_dest[cnt-5][1]
+        cnt += 1
+        two = np.random.randint(1,node,size=[2,2])
+        recode = []
+        for i in range(2):
+            while two[i][0] == two[i][1]:
+                a = np.random.randint(1,node,size=[1,2])
+                two[i][0] = a[0][0]
+                two[i][1] = a[0][1]
+            src_dest[cnt][0] = two[i][0]
+            src_dest[cnt][1] = two[i][1]
+            cnt += 1
+        
+
+    df = np.random.randint(70,80,size=[flow_num,1])
+    # 3 step 生成Df, 中间差值不要超过5
+    Df = np.random.randint(1,10, size=[flow_num,1]) + df
+    #字典中的key值即为csv中列名
+    columns = ['src','dest','df','DF']
+    dataframe = pd.DataFrame({'DF':Df[:,0],'dest':src_dest[:,1],'df':df[:,0],'src':src_dest[:,0] })
+    #将DataFrame存储为csv,index表示是否显示行名，default=True
+    # dataframe.to_csv(filename,index=False,sep=',',header=False,columns=columns)
+    dataframe.to_csv(csvname,index=False,sep=',',header=False,columns=columns)
+    
+# genFlowsCSV(mainfolder, node, flow_num,'test.csv')
+
+    
 
   

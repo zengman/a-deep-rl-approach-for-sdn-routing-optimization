@@ -5,7 +5,7 @@ __author__ = "giorgio@ac.upc.edu"
 __credits__ = "https://github.com/yanpanlau"
 
 # import simulator as environment env()
-from Environment import OmnetBalancerEnv
+# from Environment import OmnetBalancerEnv
 from Environment import OmnetLinkweightEnv
 from Environment import vector_to_file
 import numpy as np
@@ -18,10 +18,10 @@ from ActorNetwork import ActorNetwork
 from CriticNetwork import CriticNetwork
 from OU import OU
 from helper import setup_exp, setup_run, parser, pretty, scale
-from Reward_QoE import NN_training 
-from avgdata import all_print
 
-def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 means Train, 0 means simply Run
+from avgdata import all_print
+import time
+def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 means simply Run
     # SETUP STARTS HERE
     if train_indicator > 0:
         folder = setup_run(DDPG_config)
@@ -38,9 +38,10 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
     # Generate an environment
     # 需要在omnet/router中加入相应的内容，比如拓扑图networkAll.matrix等
     if DDPG_config['ENV'] == 'balancing':
-        env = OmnetBalancerEnv(DDPG_config, folder)
+        # env = OmnetBalancerEnv(DDPG_config, folder)
+        pass
     elif DDPG_config['ENV'] == 'label':
-        env = OmnetLinkweightEnv(DDPG_config, folder)
+        env = OmnetLinkweightEnv(DDPG_config, folder, flowfile)
 
     action_dim, state_dim = env.a_dim, env.s_dim
     print('state_dim =',state_dim)
@@ -105,21 +106,23 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
 
     print("OMNeT++ Experiment Start.")
     # initial state of simulator
-    s_t = env.reset(model, data_mean, data_std)
+    s_t = env.reset()
     loss = 0
+    allreward = 0
     for i in range(EPISODE_COUNT):
-
+        
         print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
-
+        
         total_reward = 0
         for j in range(MAX_STEPS):
+            t1 = time.time()
             print("step=:" + str(j))
             epsilon -= 1.0 / EXPLORE  #init esplion = 1
             a_t = np.zeros([1, action_dim]) # 1行,action_dim 列,元素为0
             noise_t = np.zeros([1, action_dim])
             # print('action_dim',action_dim)
             a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0])) # actornetwork.model
-            vector_to_file(a_t_original[0], folder + 'actionLog.txt', 'a')
+            # vector_to_file(a_t_original[0], folder + 'actionLog.txt', 'a')
             # add action = (weight, bandwidth)
             # print('a_t_original=\n',a_t_original)
             # print('s_t=\n',s_t)
@@ -143,8 +146,9 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             # numpy.clip(min,max) the elemnets who larger than max, will be replace by max, all elemnts between min and max
             
             # execute action
-            s_t1, r_t, done = env.step(a_t[0],model, data_mean, data_std) 
-            
+            t3 = time.time()
+            s_t1, r_t, done = env.step(a_t[0]) 
+            print("step time = " + str(time.time()-t3))
 
             buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
             # s_t initial state 
@@ -160,7 +164,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
             y_t = np.zeros([len(batch), action_dim])
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
             # ???
-            # print('target', target_q_values)
+            # print('target', max(target_q_values), 'min=', min(target_q_values))
             # according to dones, init y_t
             for k in range(len(batch)):
                 if dones[k]:
@@ -182,7 +186,7 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
                 critic.target_train()
                 with open(folder + 'lossLog.txt', 'a') as file:
                     file.write(pretty(loss) + '\n')
-            print(" every step Reward", "%.8f" % r_t)
+            print("every step Reward", "%.8f" % r_t)
             total_reward += r_t
             s_t = s_t1
             # print('begin layer')
@@ -213,60 +217,48 @@ def playGame(DDPG_config, model, data_mean, data_std,train_indicator=1):    #1 m
                 print(max(L2, key=L2.get), pretty(max(L2.values())))
 
             step += 1
+            t2 = time.time()
+            print("time di = " + str(t2-t1))
             if done or wise:
                 break
 
         if np.mod((i+1), 1) == 0:   # writes at every  episode
             if (train_indicator):
-                actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
-                actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
-                with open(folder + "actormodel.json", "w") as outfile:
-                    outfile.write(actor.model.to_json(indent=4) + '\n')
+                # actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
+                # actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
+                # with open(folder + "actormodel.json", "w") as outfile:
+                #     outfile.write(actor.model.to_json(indent=4) + '\n')
 
-                critic.model.save_weights(folder + "criticmodel.h5", overwrite=True)
-                critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
-                with open(folder + "criticmodel.json", "w") as outfile:
-                    outfile.write(critic.model.to_json(indent=4) + '\n')
+                # critic.model.save_weights(folder + "criticmodel.h5", overwrite=True)
+                # critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
+                # with open(folder + "criticmodel.json", "w") as outfile:
+                #     outfile.write(critic.model.to_json(indent=4) + '\n')
                 all_print(folder)
-
+        allreward += total_reward
         print("TOTAL REWARD @ " + str(i) + "-th Episode  : Reward " + str(total_reward))
         print("Total Step: " + str(step))
         print("")
 
     env.end()  # This is for shutting down
     print("Finish.")
+    # print("avg-reward = " + str(allreward))
+    return folder
 
+def main_play(flow_num, id, flowfile):
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # QoE training
-    model, data_mean, data_std = NN_training()
-    # VANILLA
-    if len(sys.argv) == 1:
-        with open('DDPG.json') as jconfig:
+   
+    with open('DDPG.json') as jconfig:
             DDPG_config = json.load(jconfig)
-        DDPG_config['EXPERIMENT'] = setup_exp()
-        playGame(DDPG_config, model, data_mean, data_std, train_indicator=1)
-    # PLAY
-    elif len(sys.argv) == 3:
-        # WATCH OUT: it appends to *Log.csv files
-        if sys.argv[1] == 'play':
-            with open(sys.argv[2] + '/' + 'DDPG.json') as jconfig:
-                DDPG_config = json.load(jconfig)
-            # here remove double slash at end if present
-            experiment = sys.argv[2] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
-            DDPG_config['EXPERIMENT'] = experiment
-            playGame(DDPG_config, model, data_mean, data_std, train_indicator=0)
-    # PLAY WITH FILE TRAFFIC
-    elif len(sys.argv) == 4:
-        # WATCH OUT: it appends to *Log.csv files
-        if sys.argv[1] == 'play':
-            with open(sys.argv[2] + '/' + 'DDPG.json') as jconfig:
-                DDPG_config = json.load(jconfig)
-            # here remove double slash at end if present
-            experiment = sys.argv[2] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
-            DDPG_config['EXPERIMENT'] = experiment
-#             DDPG_config['EPISODE_COUNT'] = 1
-#             DDPG_config['MAX_STEPS'] = 1
-            if DDPG_config['TRAFFIC'] == 'DIR:':
-                DDPG_config['TRAFFIC'] += sys.argv[3]
-            playGame(DDPG_config, model, data_mean, data_std, train_indicator=0)
+            DDPG_config['FLOW_NUM'] = flow_num
+            DDPG_config['id'] = id
+            DDPG_config['EXPERIMENT'] = setup_exp()
+    folder = playGame(DDPG_config,flowfile, train_indicator=1)
+    return folder
+
+
+# flow_num = int(sys.argv[1])
+# # name = 'store_flows/t1529666284675042_flows_india35_1.csv'
+# name = 'test.csv'
+# main_play(flow_num, '1', name)

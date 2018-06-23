@@ -10,8 +10,8 @@ LOSS = 'loss_store.txt'
 REWARD ='rewardLog.txt'
 number = sys.argv[1]
 folder = 'runs/'+str(number)+'/'
-# folder = 'new_action/'+str(number)+'/'
-flow_num = 5
+
+# flow_num = 5
 step = sys.argv[2]
 # avg-delay,jitter,loss
 def avg(filename,folder,step):
