@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-mainfolder = './topo/india35/'
+mainfolder = './topo/germany50/'
 # WEIGHT = mainfolder+'link_bandwidth.csv'
 # def read_weight():
 #     df = pd.read_csv(WEIGHT, header=None, sep=',')

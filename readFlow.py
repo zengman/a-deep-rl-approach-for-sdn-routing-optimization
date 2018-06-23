@@ -1,15 +1,15 @@
 import pandas as pd
 import numpy as np
 
-WEIGHT = './topo/india35/link_bandwidth.csv'
+WEIGHT = './topo/germany50/link_bandwidth.csv'
 def read_weight():
     df = pd.read_csv(WEIGHT, header=None, sep=',')
     return np.asarray(df)
 weight = read_weight()
 node = 35
 use_weight = np.full((node,node),-1,dtype=int)
-filename = './topo/india35/india35.txt'
-newfile = './topo/india35/india35new.txt'
+filename = './topo/germany50/germany50.txt'
+newfile = './topo/germany50/germany50new.txt'
 def replace_daterate(filename, oldstr,newstr):
     file_data = ""
     with open(filename,'r',encoding='utf-8') as f:

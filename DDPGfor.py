@@ -17,7 +17,8 @@ def get_reward(folder):
     filename = 'rewardLog.txt'
     df = pd.read_csv(folder +filename, header=None, sep=',')
     return np.asarray(df)
-topo = 'india35'
+# topo = 'india35'
+topo = 'germany50'
 folder = './topo/'+topo+"/"
 with open('DDPG.json') as jconfig:
     DDPG_config = json.load(jconfig)
