@@ -244,7 +244,7 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
     # print("avg-reward = " + str(allreward))
     return folder
 
-def main_play(flow_num, id, flowfile):
+def main_play(flow_num, flowfile):
 
 # if __name__ == "__main__":
     # QoE training
@@ -252,13 +252,36 @@ def main_play(flow_num, id, flowfile):
     with open('DDPG.json') as jconfig:
             DDPG_config = json.load(jconfig)
             DDPG_config['FLOW_NUM'] = flow_num
-            DDPG_config['id'] = id
+            DDPG_config['id'] = flowfile
             DDPG_config['EXPERIMENT'] = setup_exp()
     folder = playGame(DDPG_config,flowfile, train_indicator=1)
     return folder
 
-
 # flow_num = int(sys.argv[1])
+# filenumber = int(sys.argv[2])
 # # name = 'store_flows/t1529666284675042_flows_india35_1.csv'
-# name = 'test.csv'
-# main_play(flow_num, '1', name)
+# bb = 'store_flows/'
+# namelist = ['t1529728712863081_flows_india35_00.csv', 
+# 't1529728712868949_flows_india35_00.csv', 
+# 't1529728712879259_flows_india35_00.csv',
+# 't1529728712886410_flows_india35_00.csv', 
+# 't1529728712927220_flows_india35_00.csv', 
+# 't1529728712930017_flows_india35_00.csv',
+# 't1529728712933164_flows_india35_00.csv', 
+# 't1529728712946273_flows_india35_00.csv', 
+# 't1529728712960512_flows_india35_00.csv',
+# 't1529728739419900_flows_india35_00.csv',
+# 't1529728739449295_flows_india35_00.csv',
+# 't1529728739561115_flows_india35_00.csv',
+# 't1529728739662904_flows_india35_00.csv',
+# 't1529728739710036_flows_india35_00.csv',
+# 't1529728739733270_flows_india35_00.csv',
+# 't1529728739769648_flows_india35_00.csv',
+# 't1529728739771420_flows_india35_00.csv',
+# 't1529728739805536_flows_india35_00.csv'
+# ]
+# print(flow_num)
+# main_play(flow_num, bb+namelist[int(filenumber)])
+# for i in range(len(namelist)):
+#     name = namelist[i]
+    

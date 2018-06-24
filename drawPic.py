@@ -12,10 +12,12 @@ x_list = [5,10,15,20,25,30,35,40,45,50]
 folder = 'sampler/fd'
 # atype = sys.argv[1]
 filename = 'rewardLog.txt'
+
 def get_reward(atype):
     rewardlist = []
     for i in range(10):
         foldername = folder + str(i) + '_' + str(atype) + '/'
+
         df = pd.read_csv(foldername+filename, header=None, sep=',')
         rewardlist.append(df.head(1))
     return np.asarray(rewardlist)
@@ -58,6 +60,6 @@ plt.xlim(5,50) # 限定横轴的范围
 plt.ylim(min(yu_list), max(yu_list)) # 限定纵轴的范围
 plt.legend()
 foo_fig = plt.gcf() # 'get current figure'
-foo_fig.savefig('pic1.eps', format='eps', dpi=1000)
+# foo_fig.savefig('pic1.eps', format='eps', dpi=1000)
 plt.show()
 

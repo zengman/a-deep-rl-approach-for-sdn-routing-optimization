@@ -10,10 +10,12 @@ import numpy as np
 # import matplotlib.pyplot as plt
 import pandas as pd
 # from collections import OrderedDict  
+import os  ,sys
 """
-generate data from min to max
+根据产生的rewalog， 存reward
+输入 runs storefilename两个变量
 """
-import os  
+
       
 def file_name(file_dir): 
 
@@ -44,7 +46,9 @@ def get_reward(folder):
 #     filename = str(filename)
 #     datastore[filename] = []
 # print(datastore)
-dirname = "runs"
+rewardstorefolder = sys.argv[2] + '/'
+dirname = sys.argv[1] + '/'
+
 server_flow = file_name(dirname)
 leng = int(len(server_flow)/10)
 for i in range(len(server_flow)):
@@ -56,9 +60,9 @@ for i in range(len(server_flow)):
     flownum =ffile[start:end]
     # print(flownum)
     #datastore[flownum].append(avg)
-    if os.path.exists("./rewardset") == False:
-        os.makedirs("./rewardset") 
-    with open("./rewardset/"+flownum+'.txt', 'a') as f:
+    if os.path.exists(rewardstorefolder) == False:
+        os.makedirs(rewardstorefolder) 
+    with open(rewardstorefolder+flownum+'.txt', 'a') as f:
         f.write(str(avg) +'\n')
 # data = pd.DataFrame(datastore)
 

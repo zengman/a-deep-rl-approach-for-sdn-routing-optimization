@@ -5,7 +5,7 @@ import numpy as np
 
 def NN_training():
     #1 数据输入
-    inputfile = 'NN_test_STORE.xlsx'   #excel输入
+    inputfile = 'mos3.xlsx'   #excel输入
     # outputfile = 'output.xls' #excel输出
     modelfile = 'modelweight2.model' #神经网络权重保存
     data = pd.read_excel(inputfile,index='Date',sheet_name=0) #pandas以DataFrame的格式读入excel表
@@ -13,8 +13,9 @@ def NN_training():
     label = ['L1'] #标签一个，即需要进行预测的值
     # row_len = data.index
     # print(row_len)
-    data_train = data.loc[range(0,30)].copy() #标明excel表从第0行到520行是训练集3000
-   
+    
+    # data_train = data.loc[range(0,520)].copy() #标明excel表从第0行到520行是训练集3000
+    data_train = data.copy()
 
     #2 数据预处理和标注
     data_mean = data_train.mean()  
@@ -27,10 +28,12 @@ def NN_training():
     model = Sequential()  #层次模型
     model.add(Dense(12,input_dim=4,init='uniform')) #输入层，Dense表示BP层
     model.add(Activation('relu'))  #添加激活函数
+    model.add(Dense(12,input_dim=12,init='uniform')) #输入层，Dense表示BP层
+    model.add(Activation('relu'))  #添加激活函数
     model.add(Dense(1,input_dim=12))  #输出层
     model.compile(loss='mean_squared_error', optimizer='sgd')
     # optimizer='adma') #编译模型
-    model.fit(x_train, y_train, nb_epoch = 10, batch_size = 6) #训练模型1000次
+    model.fit(x_train, y_train, nb_epoch = 1000, batch_size = 32) #训练模型1000次
     model.save_weights(modelfile) #保存模型权重
     return model, data_mean, data_std
 
@@ -44,6 +47,15 @@ def NN_pridict(data, model, data_mean, data_std):
     y = model.predict(value) * data_std['L1'] + data_mean['L1']
     return y
 
+
+def lossreward(loss, reward):
+    for i in range(len(loss)):
+        lo = loss[i]
+        if lo >= 0.4:
+            reward[i] -= lo * 0.45
+        else:
+            reward[i] -= lo * 0.01
+    return reward
 
 def reward_QoE(x1,x2,x3,x4, model, data_mean, data_std):
     print('band:')
@@ -63,20 +75,22 @@ def reward_QoE(x1,x2,x3,x4, model, data_mean, data_std):
     b.append(x4)
     data_state = pd.DataFrame([b], columns= feature, index=['0'])
     reward = NN_pridict(data_state, model, data_mean, data_std)
+    # reward = lossreward(x4, reward)
     print('reward')
     print(reward)
     # zhognweishu = np.median(reward)
     # print('中位数:=', zhognweishu)
+
     print('均值', np.mean(reward))
 
-    result = np.mean(reward)
-    if result>5:
-        result = 5
+    # result = np.mean(reward)
+    # if result>5:
+    #     result = 5
     # print("Rewad = " + str(result))
     # result = (result - 5) * 1000
     # print(np.mean(reward))
+    # return reward.sum() - 41
     return np.mean(reward)
-    # return 
     
 #     #5 导出结果
 #     data.to_excel(outputfile) 

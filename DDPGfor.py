@@ -37,12 +37,14 @@ for k in range(cnt):
     # epoch = 'test'
     # flows_india35_1.csv =csvname
     flowfoler = 'store_flows/'
-    flowfoler += epoch.replace('.', '') + "_flows_"+topo+"_"+str(k)+str(number)+".csv"
+    if os.path.exists(flowfoler) == False:
+        os.makedirs(flowfoler) 
+    flowfoler += epoch.replace('.', '') + "_3_flows_"+topo+"_"+str(k)+str(number)+".csv"
     genFlowsCSV(folder, node_num, 100, flowfoler)   # flows_india35_1.csv
     for i in range(10):
         # 从flow=5开始，跑到flow = 50
         flow_num = (i + 1) * 5
-        newfolder = main_play(flow_num, number, flowfoler) # training
+        newfolder = main_play(flow_num, flowfoler) # training
         rewardlist = get_reward(newfolder)
         avg_reward = np.mean(rewardlist)
         rewardset.append(avg_reward)

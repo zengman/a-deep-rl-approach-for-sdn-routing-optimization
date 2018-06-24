@@ -18,4 +18,21 @@ runs_india35_6_22/
 rewardset/
 *.model
 store_flows/
+sampler/*
+kkk/*
+mat12_2/*
+mat1_1/*
+mat1_3/*
+mos3/*
+reset/*
+reward2/*
+rewardset_1/*
+runs_6_24_2/*
+runs_ss/*
+testsss/*
+*.zip
+ut/
+
+
+
 

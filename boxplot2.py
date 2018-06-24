@@ -13,7 +13,7 @@ from collections import OrderedDict
 """
 generate data from min to max
 """
-import os  
+import os  ,sys
       
 def file_name(file_dir): 
 
@@ -44,24 +44,45 @@ for i in range(10):
     filename = str(filename)
     datastore[filename] = []
 # print(datastore)
-dirname = "rewardset"
+dirname = sys.argv[1]
 server_flow = file_name(dirname)
 leng = int(len(server_flow))
 for i in range(len(server_flow)):
     ffile = server_flow[i]
     reward = get_reward(dirname+'/'+ffile)
-    print(len(reward))
+    # print(len(reward))
     # avg = np.mean(reward)
     flownum = ffile.replace('.txt','')
-    
-    # start = ffile.find('m_') + 2
-    # end = len(ffile)
-    # flownum =ffile[start:end]
-    # print(flownum)
     datastore[flownum] = reward
+
+# print(datastore)
+# dirname = "reward2"
+# server_flow = file_name(dirname)
+# leng = int(len(server_flow))
+# for i in range(len(server_flow)):
+#     ffile = server_flow[i]
+#     if 'zip' in ffile:
+#         continue
+#     reward = get_reward(dirname+'/'+ffile)
+#     flownum = ffile.replace('.txt','')
+#     datastore[flownum] = reward
+
+# dirname = "reset"
+# server_flow = file_name(dirname)
+# leng = int(len(server_flow))
+# for i in range(len(server_flow)):
+#     ffile = server_flow[i]
+#     if 'zip' in ffile:
+#         continue
+#     reward = get_reward(dirname+'/'+ffile)
+#     flownum = ffile.replace('.txt','')
+#     datastore[flownum] = reward
+
+
+
+
 data = pd.DataFrame(datastore)
 
-#draw
 data.boxplot()
 plt.ylabel("Mean MOS Value")
 plt.xlabel("Number of Flows")

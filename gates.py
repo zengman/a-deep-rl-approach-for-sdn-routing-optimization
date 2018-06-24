@@ -13,12 +13,8 @@ flow_num = 100
 输入folder， 节点个数，流的个数，生成流量矩阵
 '''
 def genFlowsCSV(folder,node,flow_num,csvname):
-    filename = folder + 'flow_test.csv'
-    # a=np.random.randint(10,100,size=[node,node]) 
-    # # 1 step 生成流的源和目的
     
     flow_tong = int(flow_num * 0.25) + 1
-    flow_sengxia = flow_num - flow_tong * 2
     src_dest = np.random.randint(1,node,size=[flow_num,2])
     # 2 step 生成df 10-50
     recode = []

@@ -360,7 +360,7 @@ void Statistic::printStats(simtime_t timet) {
     myfile_delay.open (filename, ios::out | ios::trunc );
     for (unsigned int i = 0; i < features.size(); i++ ) {
         double d = features[i];
-        d = d * 1000  ; // delay 的延迟时间单位是秒， 写入时，转换为毫秒
+        d = d * 1000 * 10 ; // delay 的延迟时间单位是秒， 写入时，转换为毫秒
         myfile_delay  << d << ",";
     }
     myfile_delay << endl;
@@ -438,7 +438,7 @@ void Statistic::printStats(simtime_t timet) {
     for (unsigned int i = 0; i < features3.size(); i++ ) {
         double d = features3[i];
         //相当于jitter 基础是10000
-        d = d * 1000 * 10; //delay 的延迟时间单位是秒， 写入时，转换为毫秒
+        d = d * 1000 * 10 ; //delay 的延迟时间单位是秒， 写入时，转换为毫秒
         myfile3  << d << ",";
     }
     myfile3 << endl;

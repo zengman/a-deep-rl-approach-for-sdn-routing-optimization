@@ -193,6 +193,7 @@ class OmnetLinkweightEnv():
         # input the network matrix
         self.graph = nx.Graph(np.loadtxt(topology, dtype=int))
         if self.ACTIVE_NODES != self.graph.number_of_nodes():
+            print('nodes num 不符合图')
             return 
         ports = 'omnet/router/NetworkAll.ports'
         self.ports = np.loadtxt(ports, dtype=int)
@@ -632,7 +633,7 @@ class OmnetLinkweightEnv():
         # reward * 100 突出分数
         self.reward = reward
 
-        # self.test( self.model, self.data_mean, self.data_std)
+        self.test( self.model, self.data_mean, self.data_std)
         return new_state, reward, 0
 
     

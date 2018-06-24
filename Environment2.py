@@ -12,6 +12,7 @@ import pandas as pd
 import json
 import sys
 import os
+import time
 
 from helper import pretty, softmax, MaxMinNormalization
 from Traffic import Traffic
@@ -33,6 +34,7 @@ BALANCINGLOG = 'BalancingLog.csv'
 REWARDLOG = 'rewardLog.txt'
 WHOLELOG = 'Log.csv'
 OMLOG = 'omnetLog.csv'
+BANDWIDTH = 'Bandwidth.txt'
 
 
 # FROM MATRIX
@@ -158,7 +160,7 @@ class OmnetLinkweightEnv():
 
         self.TRAFFIC = DDPG_config['TRAFFIC']
         
-        self.tgen = Traffic(self.ACTIVE_NODES, self.TRAFFIC, capacity, self.flow_num)
+        # self.tgen = Traffic(self.ACTIVE_NODES, self.TRAFFIC, capacity, self.flow_num, '')
 
         self.CLUSTER = DDPG_config['CLUSTER'] if 'CLUSTER' in DDPG_config.keys() else False
         self.env_T = np.full((self.flow_num, 5), -1.0, dtype=int)
@@ -179,6 +181,7 @@ class OmnetLinkweightEnv():
         self.env_choice = np.full(self.flow_num, 0, dtype=int) # 每条流的路径选择
         self.choice_id = 0
         self.altype = 0
+        self.sort = ''
 
         self.chose_all_flow_path_set = [] # 保存所有流选择好的路径
         # return True
@@ -204,14 +207,18 @@ class OmnetLinkweightEnv():
 
     def other_up(self,flow_num,model, data_mean, data_std):
         self.flow_num = flow_num
-        self.otheraction = OtherAction(self.altype,self.flow_num,self.choice_id) # 第一组数据
+        self.otheraction = OtherAction(self.altype,self.flow_num,self.choice_id, self.sort) # 第一组数据
         path_chose = self.otheraction.read_path_choice() # 得到选择的路径
         self.env_Path = path_chose
+        # print('env_path', self.env_Path)
         self.upd_env_W(np.full([self.a_dim], 0.05, dtype=float)) 
         # self.env_W = self.otheraction.read_weight()
         # self.env_T = np.full((self.flow_num, 5), -1.0, dtype=int)
         self.env_T = self.otheraction.csv_traffic()
         self.env_T[:,3] = self.otheraction.read_band()
+
+        # print( 'banddddd', self.env_T[:,0] )
+        self.env_Bw = self.env_T[:,3]
         vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
         
         self.env_flow_R = []
@@ -231,11 +238,15 @@ class OmnetLinkweightEnv():
         om_output_delay = file_to_csv(self.folder + OMDELAY)
         om_output_jitter = file_to_csv(self.folder + OMJITTER)
         om_output_plr = file_to_csv(self.folder + OMPLR)
+        om_output_bandwidth = file_to_csv(self.folder + BANDWIDTH)
+
 
         self.upd_env_D(csv_to_vector(om_output_delay, 0, self.flow_num)) # 更新delay
         self.upd_env_L(csv_to_vector(om_output_plr, 0, self.flow_num)) #packt loss
         self.upd_env_J(csv_to_vector(om_output_jitter, 0, self.flow_num))
-        reward = rl_reward(self, model, data_mean, data_std)
+        self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
+
+        reward = reward_QoE(self.env_Bw, self.env_D,self.env_J,self.env_L, model, data_mean, data_std)
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
 
@@ -255,6 +266,7 @@ class OmnetLinkweightEnv():
             path_o_ports.append(port)
         path_o_ports.append(path[-1])
         self.chose_all_flow_path_set.append(path_o_ports)
+        # print('paht', path_o_ports)
 
         # self.env_R = np.asarray(routing_ports)
         # self.env_Rn = np.asarray(routing_nodes)
@@ -326,7 +338,8 @@ mainfolder 代表 topo
 new_action = inida35
 
 '''
-def omnetReward(mainfolder):
+tag = sys.argv[1] # 标记次数
+def omnetReward(mainfolder, sort):
     # mainfolder = "topo/india35/"
     # mainfolder ="sampler/"
     with open('DDPG.json') as jconfig:
@@ -340,8 +353,10 @@ def omnetReward(mainfolder):
         DDPG_config['FLOW_NUM'] = (i+1)*5
         env = OmnetLinkweightEnv(DDPG_config, mainfolder)
         env.choice_id = i
+        env.sort = sort
         env.altype = 0
-        folder = mainfolder+"fd"+str(i)+"_t/"
+        epoch = 't%.6f' % time.time()
+        folder = mainfolder+epoch.replace('.', '')+'_'+str((i+1)*5)+"_tttt/"
         os.makedirs(folder, exist_ok=True)
         with open(folder + 'folder.ini', 'w') as ifile:
             ifile.write('[General]\n')
@@ -351,7 +366,7 @@ def omnetReward(mainfolder):
         env.folder = folder
         env.other_up(env.flow_num,model, data_mean, data_std)
         env.altype = 1
-        folder = mainfolder+"fd"+str(i)+"_u/"
+        folder = mainfolder+epoch.replace('.', '')+'_'+str((i+1)*5)+"_uuuu/"
         os.makedirs(folder, exist_ok=True)
         with open(folder + 'folder.ini', 'w') as ifile:
             ifile.write('[General]\n')
@@ -362,4 +377,6 @@ def omnetReward(mainfolder):
         env.other_up(env.flow_num,model, data_mean, data_std)
         print('ss ok')
 
-omnetReward("sampler/")
+
+sort = 'Mat'+str(tag)
+omnetReward("kkk/", sort)
