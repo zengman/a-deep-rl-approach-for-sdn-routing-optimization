@@ -12,7 +12,8 @@ import pandas as pd
 from helper import pretty, softmax, MaxMinNormalization
 from Traffic import Traffic
 from K_shortest_path import k_shortest_paths
-from Reward_QoE import reward_QoE ,NN_training
+# from Reward_QoE import reward_QoE ,NN_training
+from newrewardQoe import reward_QoE
 import time
 from genLinkBand import getlinkuiti
 OMTRAFFIC = 'Traffic.txt'
@@ -470,7 +471,7 @@ class OmnetLinkweightEnv():
             return None
         # self.logheader()
         # routing
-        self.model, self.data_mean, self.data_std = NN_training()
+        # self.model, self.data_mean, self.data_std = NN_training()
         self.upd_env_W(np.full([self.a_dim], 0.05, dtype=float)) 
         # if self.ACTUM == 'DELTA':
         #     vector_to_file(matrix_to_omnet_v(self.env_R), self.folder + OMROUTING, 'w')
@@ -517,8 +518,8 @@ class OmnetLinkweightEnv():
         self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
         self.my_log_header()
         self.log_everything()
-        self.reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
-      
+        # self.reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
+        self.reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L)
         print('reset-reward',self.reward)
 
 
@@ -561,8 +562,8 @@ class OmnetLinkweightEnv():
             loss = np.asarray(loss)
             delay = np.asarray(delay)
             band = np.asarray(band)
-            reward = reward_QoE (band,delay,jitter,loss, model, data_mean, data_std)
-            print(reward)
+            # reward = reward_QoE (band,delay,jitter,loss, model, data_mean, data_std)
+            # print(reward)
 
     def step(self, action):
         self.counter += 1
@@ -618,8 +619,8 @@ class OmnetLinkweightEnv():
        
         # self.upd_env_S()
         
-        reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
-      
+        # reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
+        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L)
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
         vector_to_file(matrix_to_log_v(self.env_D), self.folder + 'Dealy_store.txt','a')
@@ -633,7 +634,7 @@ class OmnetLinkweightEnv():
         # reward * 100 突出分数
         self.reward = reward
 
-        self.test( self.model, self.data_mean, self.data_std)
+        # self.test( self.model, self.data_mean, self.data_std)
         return new_state, reward, 0
 
     

@@ -32,7 +32,9 @@ runs_ss/*
 testsss/*
 *.zip
 ut/
-
+matUT/
+matddpg/
+newreward_ut/
 
 
 

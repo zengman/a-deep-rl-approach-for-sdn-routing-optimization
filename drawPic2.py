@@ -27,11 +27,11 @@ def get_reward(atype,namelist, type):
             df = pd.read_csv(foldername+filename, header=None, sep=',')
             rewardlist.append(df.head(1))
     return np.asarray(rewardlist)
-folderg = './topo/germany50/fd'
-# ygt_list = get_reward('t',folderg)
+
 ygu_list = get_reward('u',namelist, 'uuuu')
 ytu_list  = get_reward('t', namelist, 'ttt')
-
+# folderg = './topo/germany50/fd'
+# ygt_list = get_reward('t',folderg)
 # foldert = './topo/ta2/fd'
 # # ytt_list = get_reward('t',foldert)
 # ytu_list = get_reward('u',foldert)
@@ -111,9 +111,11 @@ plt.rc('legend', fontsize=13)    # legend fontsize
 # plt.rc('figure', titlesize=BIGGER_SIZE) 
 
 plt.xlim(5,50) # 限定横轴的范围
-plt.ylim(min(ygu_list), max(ygu_list)) # 限定纵轴的范围
+ymin = min(ygu_list) if min(ytu_list) > min(ygu_list) else min(ytu_list)
+ymax = max(ygu_list) if max(ytu_list) < max(ygu_list) else max(ytu_list)
+plt.ylim(ymin, ymax) # 限定纵轴的范围
 plt.legend()
 foo_fig = plt.gcf() # 'get current figure'
-foo_fig.savefig('pic2.eps', format='eps', dpi=1000)
+# foo_fig.savefig('pic2.eps', format='eps', dpi=1000)
 plt.show()
 

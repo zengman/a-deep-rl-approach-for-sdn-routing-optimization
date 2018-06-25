@@ -14,7 +14,7 @@
     "LRA": 0.0001,
     "LRC": 0.001,
     "MAX_DELTA": 0.1,
-    "MAX_STEPS": 1000,
+    "MAX_STEPS": 300,
     "MU": 0.0,
     "PRAEMIUM": "AVG",
     "PRINT": false,
