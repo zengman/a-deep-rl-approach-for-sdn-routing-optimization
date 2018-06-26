@@ -224,15 +224,15 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
 
         if np.mod((i+1), 1) == 0:   # writes at every  episode
             if (train_indicator):
-                # actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
-                # actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
-                # with open(folder + "actormodel.json", "w") as outfile:
-                #     outfile.write(actor.model.to_json(indent=4) + '\n')
+                actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
+                actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
+                with open(folder + "actormodel.json", "w") as outfile:
+                    outfile.write(actor.model.to_json(indent=4) + '\n')
 
-                # critic.model.save_weights(folder + "criticmodel.h5", overwrite=True)
-                # critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
-                # with open(folder + "criticmodel.json", "w") as outfile:
-                #     outfile.write(critic.model.to_json(indent=4) + '\n')
+                critic.model.save_weights(folder + "criticmodel.h5", overwrite=True)
+                critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
+                with open(folder + "criticmodel.json", "w") as outfile:
+                    outfile.write(critic.model.to_json(indent=4) + '\n')
                 all_print(folder)
         allreward += total_reward
         print("TOTAL REWARD @ " + str(i) + "-th Episode  : Reward " + str(total_reward))
@@ -244,19 +244,37 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
     # print("avg-reward = " + str(allreward))
     return folder
 
-def main_play(flow_num, flowfile):
+def main_play(flow_num,tag, flowfile):
 
 # if __name__ == "__main__":
     # QoE training
    
-    with open('DDPG.json') as jconfig:
+    # with open('DDPG.json') as jconfig:
+    #         DDPG_config = json.load(jconfig)
+    #         DDPG_config['FLOW_NUM'] = flow_num
+    #         DDPG_config['id'] = flowfile
+    #         DDPG_config['EXPERIMENT'] = setup_exp()
+    # folder = playGame(DDPG_config,flowfile, train_indicator=1)
+    if sys.argv[1] == 'play':
+            with open(sys.argv[2] + '/' + 'DDPG.json') as jconfig:
+                DDPG_config = json.load(jconfig)
+            # here remove double slash at end if present
+            experiment = sys.argv[2] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
+            DDPG_config['EXPERIMENT'] = experiment
+            DDPG_config['FLOW_NUM'] = flow_num
+            DDPG_config['id'] = flowfile
+            DDPG_config['tag'] = tag
+            playGame(DDPG_config, flowfile,train_indicator=0)
+    else:
+        with open('DDPG.json') as jconfig:
             DDPG_config = json.load(jconfig)
             DDPG_config['FLOW_NUM'] = flow_num
             DDPG_config['id'] = flowfile
+            DDPG_config['tag'] = tag
             DDPG_config['EXPERIMENT'] = setup_exp()
-    folder = playGame(DDPG_config,flowfile, train_indicator=1)
-    return folder
-
+            playGame(DDPG_config,flowfile, train_indicator=1)
+    # return folder
+main_play(10,'test', 'data_new_multi/Mat1/flows_Mat1.csv')
 # flow_num = int(sys.argv[1])
 # filenumber = int(sys.argv[2])
 # # name = 'store_flows/t1529666284675042_flows_india35_1.csv'

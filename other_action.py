@@ -58,7 +58,8 @@ class OtherAction():
     def read_band(self):
         band = pd.read_csv(self.band, header=None, sep=',')
         t = band.iloc[self.id]
-        t = np.asarray(t[t!=0])
+        t = np.asarray(t[:self.flow_num])
+        print(t)
         return t
 
     def read_weight(self):
@@ -74,6 +75,7 @@ class OtherAction():
         a = np.arange(0,self.flow_num)
         t[:,0] -= 1
         t[:,1] -= 1
+        # t[:,4] = t[:,4] * 0.2
         # print(t[:,0])
         # print(t[:,1])
         return np.c_[a,t]

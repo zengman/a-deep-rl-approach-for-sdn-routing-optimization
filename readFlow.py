@@ -19,13 +19,13 @@ def replace_daterate(filename, oldstr,newstr):
                 number = int(line[50:51])
                 oldstr = "Channel_c{datarate="+line[50:51]
                 dd = np.random.randint(70,100, size=None)
-                newstr = "Channel_c{datarate="+str(dd)
+                newstr = "Channel_c{datarate="+str(dd )
 
             else:
                 number = int(line[50:52])
                 oldstr = "Channel_c{datarate="+line[50:52]
                 dd = np.random.randint(70,100, size=None)
-                newstr = "Channel_c{datarate="+str(dd)
+                newstr = "Channel_c{datarate="+str(dd )
             # print(oldstr + ", "+newstr)
             # if oldstr in line:
             line = line.replace(oldstr,newstr)

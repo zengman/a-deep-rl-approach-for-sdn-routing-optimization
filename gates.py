@@ -39,13 +39,13 @@ def genFlowsCSV(folder,node,flow_num,csvname):
         src_dest[cnt][0] = src_dest[cnt-1][0]
         src_dest[cnt][1] = src_dest[cnt-1][1]
         cnt += 1
-        src_dest[cnt][0] = src_dest[cnt-3][0]
-        src_dest[cnt][1] = src_dest[cnt-3][1]
-        cnt += 1
-        src_dest[cnt][0] = src_dest[cnt-5][0]
-        src_dest[cnt][1] = src_dest[cnt-5][1]
-        cnt += 1
-        two = np.random.randint(1,node,size=[2,2])
+        # src_dest[cnt][0] = src_dest[cnt-3][0]
+        # src_dest[cnt][1] = src_dest[cnt-3][1]
+        # cnt += 1
+        # src_dest[cnt][0] = src_dest[cnt-5][0]
+        # src_dest[cnt][1] = src_dest[cnt-5][1]
+        # cnt += 1
+        two = np.random.randint(1,node,size=[4,2])
         recode = []
         for i in range(2):
             while two[i][0] == two[i][1]:

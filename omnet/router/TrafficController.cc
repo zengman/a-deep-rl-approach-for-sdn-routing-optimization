@@ -76,7 +76,7 @@ void TrafficController::initialize()
             Statistic::instance()->setNumFlow(flow_num);
             Statistic::instance()->setFolder(folderName);
             Statistic::instance()->getTrafficInfo(j,&bandwidth, &src, &dest, &bandwidth_df);
-            if(src == id ){
+            if(src == id   && bandwidth_df != 0){
                 ControlPacket *data = new ControlPacket("trafficInfo");
                 //cout<<"traffic flow_Id="<<j<<",src"<<src<<",dest="<<dest<<endl;
                 data->setData(bandwidth);

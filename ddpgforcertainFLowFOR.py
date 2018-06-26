@@ -121,6 +121,7 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
             a_t = np.zeros([1, action_dim]) # 1行,action_dim 列,元素为0
             noise_t = np.zeros([1, action_dim])
             # print('action_dim',action_dim)
+            
             a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0])) # actornetwork.model
             # vector_to_file(a_t_original[0], folder + 'actionLog.txt', 'a')
             # add action = (weight, bandwidth)
@@ -136,9 +137,9 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
                 # train_indicator == 1 means train
 
             a = a_t_original[0]
-            # n = noise_t[0]
-            # a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
-            a_t[0] = a
+            n = noise_t[0]
+            a_t[0] = np.where((a + n > 0) & (a + n < 1), a + n, a - n).clip(min=0, max=1)
+            # a_t[0] = a
             
             
             # if 0<(a+n)<1, return a+n, else return a-n 
@@ -285,18 +286,21 @@ flowdir = file_name(flowmainfolder)
 #     flow_file = flowmainfolder + 'Mat'+sys.argv[1] + '/flows_Mat0'+ sys.argv[1] + '.csv'
 
 
-# flownum = int(sys.argv[2])
-# main_play(flownum, 'Mat'+sys.argv[1], flow_file)
+flownum = int(sys.argv[2])
+iddd = sys.argv[1]
+flow_file = flowmainfolder + 'Mat'+iddd+ '/flows_Mat'+ iddd + '.csv'
+main_play(flownum, 'Mat'+sys.argv[1], flow_file)
 
     
 # start = int(sys.argv[1])
 # end = int(sys.argv[2])
-# for i in range(5, 17):
-i  = sys.argv[1]
-for flownum in range(10):
-    flownum = (flownum + 1)*5
-    flow_file = flowmainfolder + 'Mat'+str(i) + '/flows_Mat'+ str(i) + '.csv'
-    main_play(flownum, 'Mat'+str(i), flow_file)
+# # for i in range(5, 17):
+
+# i  = sys.argv[1]
+# for flownum in range(10):
+#     flownum = (flownum + 1)*5
+#     flow_file = flowmainfolder + 'Mat'+str(i) + '/flows_Mat'+ str(i) + '.csv'
+#     main_play(flownum, 'Mat'+str(i), flow_file)
 
 
 

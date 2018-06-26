@@ -1,11 +1,13 @@
 #!/bin/bash
 
-nohup python ddpgforcertainFLowFOR.py 5 >/dev/null 2>&1 &
-nohup python ddpgforcertainFLowFOR.py 6 >/dev/null 2>&1 &
-nohup python ddpgforcertainFLowFOR.py 7 >/dev/null 2>&1 &
-nohup python ddpgforcertainFLowFOR.py 8 >/dev/null 2>&1 &
-nohup python ddpgforcertainFLowFOR.py 9 >/dev/null 2>&1 &
-nohup python ddpgforcertainFLowFOR.py 10 >/dev/null 2>&1 &
+nohup python ddpgforcertainFLowFOR.py 1 15 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 12 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 13 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 14 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 15 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 16 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 17 >/dev/null 2>&1 &
+# nohup python ddpgforcertainFLowFOR.py 18 >/dev/null 2>&1 &
 
 
 # nohup python ddpgforcertainFLowFOR.py 5 10 >/dev/null 2>&1 &

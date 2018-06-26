@@ -217,6 +217,9 @@ class OmnetLinkweightEnv():
         # self.env_W = self.otheraction.read_weight()
         # self.env_T = np.full((self.flow_num, 5), -1.0, dtype=int)
         self.env_T = self.otheraction.csv_traffic()
+        print('tttt',self.env_T)
+        print('ebdbd')
+        
         self.env_T[:,3] = self.otheraction.read_band()
 
         # print( 'banddddd', self.env_T[:,0] )
@@ -249,7 +252,7 @@ class OmnetLinkweightEnv():
         self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
 
         # reward = reward_QoE(self.env_Bw, self.env_D,self.env_J,self.env_L, model, data_mean, data_std)
-        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L)
+        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
         
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv

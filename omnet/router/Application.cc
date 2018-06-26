@@ -88,6 +88,9 @@ void Application::handleMessage(cMessage *msg)
             else{
                 double bd = uniform(bandwidth_df, bandwidth);
                 double jitter = 0.5;
+                if(bandwidth_df == 0){
+                    bandwidth_df = 0.001;
+                }
                 etime = size/(bandwidth_df*1024); // 用df去跑
 
             }

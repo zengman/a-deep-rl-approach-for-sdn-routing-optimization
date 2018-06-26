@@ -99,21 +99,31 @@ def rl_state(env):
         return np.concatenate((matrix_to_rl(env.env_B), matrix_to_rl(env.env_T)))
     elif env.STATUM == 'T':
         # return matrix_to_rl(env.env_T)
-        env.upd_env_S()
+        # env.upd_env_S()
         # return matrix_to_rl(env.env_S)
-        temp = np.concatenate((
-            MaxMinNormalization(matrix_to_rl(env.env_Bw)), \
-            MaxMinNormalization(matrix_to_rl(env.env_D)), \
-            MaxMinNormalization(matrix_to_rl(env.env_J)), \
-            MaxMinNormalization(matrix_to_rl(env.env_L))\
-            ))
+       
+        tm = softmax(env.env_Bw)
+        tm = matrix_to_rl(tm)
+        # tm = tm.reshape(env.flow_num, 1)
+        # size = tm.shape[0]
+        print(tm)
+        # print(tm.shape[1])
+        # print()
+        return tm
+        # temp = np.asarray(MaxMinNormalization(matrix_to_rl(env.env_Bw)))
+        # temp = np.concatenate((
+        #     MaxMinNormalization(matrix_to_rl(env.env_Bw)), \
+        #     # MaxMinNormalization(matrix_to_rl(env.env_D)), \
+        #     # MaxMinNormalization(matrix_to_rl(env.env_J)), \
+        #     # MaxMinNormalization(matrix_to_rl(env.env_L))\
+        #     ))
         # temp = np.concatenate((
         #     softmax(matrix_to_rl(env.env_Bw)), \
         #     softmax(matrix_to_rl(env.env_D)), \
         #     softmax(matrix_to_rl(env.env_J)), \
         #     softmax(matrix_to_rl(env.env_L))\
         #     ))
-        return temp
+        # return temp
 
 def rl_reward(env, model, data_mean, data_std):
    pass
@@ -141,16 +151,17 @@ def omnet_wrapper(env):
     except Exception as e:
         omnet_output = e.stdout.decode()
 
-    # vector_to_file([omnet_output],env.folder + 'omgoutput.csv', 'a')
+        vector_to_file([omnet_output],env.folder + 'omgoutput.csv', 'a')
 
     if 'Error' in omnet_output:
         omnet_output = omnet_output.replace(',', '')
         o_u_l = [_.strip() for _ in omnet_output.split('\n') if _ is not '']
         omnet_output = ','.join(o_u_l[4:])
+        # vector_to_file([omnet_output], env.folder + OMLOG, 'a')
+
     else:
         omnet_output = 'ok'
 
-    # vector_to_file([omnet_output], env.folder + OMLOG, 'a')
 
 
 def ned_to_capacity(env):
@@ -204,7 +215,7 @@ class OmnetLinkweightEnv():
         # counts the total number of edges in the graph:
 
         # self.s_dim = self.ACTIVE_NODES**2 - self.ACTIVE_NODES    # traffic minus diagonal
-        self.s_dim = self.flow_num*4
+        self.s_dim = self.flow_num*4 # 输入包括带宽,delay,jitter,loss
         self.STATUM = DDPG_config['STATUM']
         if self.STATUM == 'RT':
             self.s_dim *= 2    # traffic + routing table minus diagonals
@@ -216,7 +227,7 @@ class OmnetLinkweightEnv():
         self.TRAFFIC = DDPG_config['TRAFFIC']
         
         self.tgen = Traffic(self.ACTIVE_NODES, self.TRAFFIC, capacity, self.flow_num, flowfile)
-
+        self.path_file = flowfile.replace('flows','path')
         self.CLUSTER = DDPG_config['CLUSTER'] if 'CLUSTER' in DDPG_config.keys() else False
         self.env_T = np.full((self.flow_num, 5), -1.0, dtype=int)
         # self.env_T = np.full([self.ACTIVE_NODES]*2, -1.0, dtype=float)  # traffic
@@ -252,16 +263,31 @@ class OmnetLinkweightEnv():
     def upd_env_W(self, vector):
         self.env_W = np.asarray(softmax(vector))
 
+    def read_path(self):
+        all_path = pd.read_csv( self.path_file , header=None, sep=',')
+        index = 0
+        self.env_Path = []
+        while index < len(all_path):
+            flow_path = []
+            for i in range(3):
+                path = all_path.iloc[index + i,:]
+                path = np.asarray(path)-1
+                flow_path.append(path[path!=-1])
+            index += 3
+            self.env_Path.append(flow_path)
+        
+
     def set_env_R_K(self,k=3):
         '''拿到每条流得到的path集合'''
-        sour_des = self.env_T[:,1:3]
-        all_path = []
-        for x in sour_des:
-            s = int(x[0])
-            d = int(x[1])
-            (length, path) = k_shortest_paths(self.graph.copy(), s, d, k)
-            all_path.append(path)
-        self.env_Path = all_path
+        self.read_path()
+        # sour_des = self.env_T[:,1:3]
+        # all_path = []
+        # for x in sour_des:
+        #     s = int(x[0])
+        #     d = int(x[1])
+        #     (length, path) = k_shortest_paths(self.graph.copy(), s, d, k)
+        #     all_path.append(path)
+        # self.env_Path = all_path
         
        
 
@@ -480,9 +506,25 @@ class OmnetLinkweightEnv():
         # traffic
         self.env_T = np.asarray(self.tgen.generate())
         self.env_Bw = self.env_T[:,3]
-        print(self.env_Bw[0])
+        # #-----------------------------
+        # # 设置很好的初始解
+        # band = [5,64.0771,71,75,71.6548,71,77,77.1484,76,69.4056]
+        # Df = band.copy()
+        # df = band.copy()
+        # for i in range(10):
+        #     Df[i] = band[i] + 3
+        #     df[i] = band[i] -3 
+        # df = np.asarray(df)
+        # Df = np.asarray(Df)
+        # self.env_Bw = df.copy()
+        # self.env_T[:,3] = df.copy()
+        # self.env_T[:,4] = Df.copy()
+        # print(self.env_Bw)
+        # #-----------------------------
         self.env_bw_original = self.env_Bw.copy()
-        vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
+        temp_t = self.env_T.copy()
+        temp_t[:,3] = self.env_T[:,4]
+        vector_to_file(matrix_to_omnet_v(temp_t), self.folder + OMTRAFFIC, 'w')
         self.set_env_R_K(3)
 
         self.env_chocie = np.random.randint(low=0,high=4,size=1)
@@ -490,6 +532,7 @@ class OmnetLinkweightEnv():
         tforR1 = time.time()
         self.chose_all_flow_path_set = []
         self.env_path_set = []
+        # self.env_chocie = [0,0,0,0,1]
         for i in range(self.flow_num):
             choice = self.env_choice[i]
             routing = self.upd_env_R_from_k_flow(i,choice)
@@ -519,9 +562,11 @@ class OmnetLinkweightEnv():
         self.my_log_header()
         self.log_everything()
         # self.reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
-        self.reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L)
+        self.reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
         print('reset-reward',self.reward)
 
+        # 前面的都作废
+        self.env_Bw = self.env_T[:,4]
 
         return rl_state(self) # if STATUM==T, return self.env_S 
     
@@ -567,15 +612,17 @@ class OmnetLinkweightEnv():
 
     def step(self, action):
         self.counter += 1
-        
+        print('action',action)
         # self.upd_env_W(action[:self.graph.number_of_edges()]) # 特殊函数处理过后的概率数字作为weights
         bd = action[self.flow_num:]
+        print('bd',bd)
         # self.env_bw_original = bd
         self.upd_env_Bw(bd) # update Bandwidth
         self.upd_env_T_tr(self.env_Bw)
         vector_to_file(matrix_to_log_v(self.env_Bw), self.folder + 'bandwidth_store.txt','a')
         self.upd_env_choice(action[:self.flow_num])
-        print('choice :', len(self.env_choice))
+        # self.env_choice = [0,0,0,0,1]
+        print('choice :', self.env_choice)
 
         self.env_flow_R = []
         tforR1 = time.time()
@@ -620,7 +667,7 @@ class OmnetLinkweightEnv():
         # self.upd_env_S()
         
         # reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
-        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L)
+        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
         vector_to_file(matrix_to_log_v(self.env_D), self.folder + 'Dealy_store.txt','a')

@@ -345,8 +345,11 @@ void Statistic::printStats(simtime_t timet) {
            if (numPackets == 0)
                if (src == dst)
                    features.push_back(-1);
-               else
+               else if(trafficlist[i][3] == 0){
+                   features.push_back(0);
+               }else{
                    features.push_back(std::numeric_limits<double>::infinity());
+               }
            else
                features.push_back(d/numPackets);
 //       }
@@ -372,8 +375,14 @@ void Statistic::printStats(simtime_t timet) {
     for (int i = 0; i < flow_num; i++) {
 
            long double lostp = Numpackets[i];  //kb
+           
            long double sendp = SendPackets[i] + lostp; // 总的发送包数目
+           if(sendp == 0){
+               features2.push_back(0);
+               continue;
+           }
            long double rate =lostp/sendp;
+           
 //           cout<<"sendp = "<<sendp<<", lostp="<<lostp<<endl;
            features2.push_back(rate);
     //    }
@@ -412,17 +421,20 @@ void Statistic::printStats(simtime_t timet) {
 //
 //        }
         unsigned int numPackets = (Delay)[i][src][dst].size();
-        for(int k=0; k<numPackets-1; k++){
-            d += abs( (Delay)[i][src][dst][k+1] - (Delay)[i][src][dst][k]);
-        }
         if (numPackets == 0){
             if (src == dst)
                 features3.push_back(-1);
+            else if(trafficlist[i][3] == 0){
+                features3.push_back(0);
+            }
             else
                 features3.push_back(std::numeric_limits<double>::infinity());
+            continue;
         }
-
-        else if (numPackets == 1)
+        for(int k=0; k<numPackets-1; k++){
+            d += abs( (Delay)[i][src][dst][k+1] - (Delay)[i][src][dst][k]);
+        }
+        if (numPackets == 1)
             features3.push_back(0);
         else
         {

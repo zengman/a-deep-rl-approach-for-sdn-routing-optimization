@@ -51,10 +51,15 @@ class Traffic():
         for i in range(self.flow_num):
             t[i,:] = list(data.ix[i,:]) 
         a = np.arange(0,self.flow_num)
-        # t[:,0] -= 1
-        t[:,2] += 20
-        # t[:,3] -= 
+        t[:,0] -= 1
+        t[:,1] -= 1
+        # t[:,2] += 20
+        # 降低Df到1/5
+        # t[:,2] = t[:,2] * 0.2
+        # t[:,3] = t[:,3] * 0.2
+        
         print('traffic -------')
+        print(t)
      
         return np.c_[a,t]
         # with open('./flows.csv', 'r') as file:

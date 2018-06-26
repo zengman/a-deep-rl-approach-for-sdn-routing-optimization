@@ -6,3 +6,4 @@ scipy==0.19.0
 tensorflow
 pandas
 matplotlib
+seaborn
