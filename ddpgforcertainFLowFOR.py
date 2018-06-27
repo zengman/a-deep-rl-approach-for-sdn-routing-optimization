@@ -292,10 +292,10 @@ flowdir = file_name(flowmainfolder)
 #     flow_file = flowmainfolder + 'Mat'+sys.argv[1] + '/flows_Mat0'+ sys.argv[1] + '.csv'
 
 
-flownum = int(sys.argv[2])
-iddd = sys.argv[1]
-flow_file = flowmainfolder + 'Mat'+iddd+ '/flows_Mat'+ iddd + '.csv'
-main_play(flownum, 'Mat'+sys.argv[1], flow_file)
+# flownum = int(sys.argv[2])
+# iddd = sys.argv[1]
+# flow_file = flowmainfolder + 'Mat'+iddd+ '/flows_Mat'+ iddd + '.csv'
+# main_play(flownum, 'Mat'+sys.argv[1], flow_file)
 # main_play_after(flownum,'Mat' + sys.argv[1], flow_file)
 
     
@@ -303,11 +303,12 @@ main_play(flownum, 'Mat'+sys.argv[1], flow_file)
 # end = int(sys.argv[2])
 # # for i in range(5, 17):
 
-# i  = sys.argv[1]
-# for flownum in range(10):
-#     flownum = (flownum + 1)*5
-#     flow_file = flowmainfolder + 'Mat'+str(i) + '/flows_Mat'+ str(i) + '.csv'
-#     main_play(flownum, 'Mat'+str(i), flow_file)
+i  = sys.argv[1]
+flowmainfolder  = 'smat_flow_folder/'
+for flownum in range(10):
+    flownum = (flownum + 1)*5
+    flow_file = flowmainfolder +'/flows_Mat'+ str(i) + '.csv'
+    main_play(flownum, 'Mat'+str(i), flow_file)
 
 
 

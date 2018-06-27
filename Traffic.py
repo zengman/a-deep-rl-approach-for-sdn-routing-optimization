@@ -51,6 +51,7 @@ class Traffic():
         for i in range(self.flow_num):
             t[i,:] = list(data.ix[i,:]) 
         a = np.arange(0,self.flow_num)
+        print(t[:,1])
         t[:,0] -= 1
         t[:,1] -= 1
         # t[:,2] += 20

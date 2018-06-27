@@ -48,8 +48,8 @@ for i in range(10):
             drl_list.append(np.max(df))
 
 plt.figure(figsize=(10, 7))
-line1 = plt.plot(x_list, ygu_list, linestyle=':' , marker='v',color="black", linewidth=2.3, label='uu')
-line2 = plt.plot(x_list, ytu_list, linestyle='--', marker='d',color="blue", linewidth=2.3, label='tt ')
+# line1 = plt.plot(x_list, ygu_list, linestyle=':' , marker='v',color="black", linewidth=2.3, label='uu')
+# line2 = plt.plot(x_list, ytu_list, linestyle='--', marker='d',color="blue", linewidth=2.3, label='tt ')
 line3 = plt.plot(x_list, drl_list, linestyle='-', marker='o',color="green", linewidth=2.3, label='drl')
 
 plt.xlabel("Number of Flows",fontsize=15)
@@ -65,7 +65,8 @@ ymin = min(ygu_list) if min(ytu_list) > min(ygu_list) else min(ytu_list)
 ymax = max(ygu_list) if max(ytu_list) < max(ygu_list) else max(ytu_list)
 ymin = np.min(drl_list) if np.min(drl_list)< ymin else ymin
 ymax = np.max(drl_list) if np.max(drl_list) > ymax else ymax
-plt.ylim(ymin, ymax) # 限定纵轴的范围
+# plt.ylim(ymin, ymax) # 限定纵轴的范围
+plt.ylim(np.min(drl_list), np.max(drl_list))
 plt.legend()
 foo_fig = plt.gcf() # 'get current figure'
 # foo_fig.savefig('pic2.eps', format='eps', dpi=1000)

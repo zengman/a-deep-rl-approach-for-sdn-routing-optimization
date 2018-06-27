@@ -278,18 +278,18 @@ class OmnetLinkweightEnv():
     def upd_env_W(self, vector):
         self.env_W = np.asarray(softmax(vector))
 
-    def read_path(self):
-        all_path = pd.read_csv( self.path_file , header=None, sep=',')
-        index = 0
-        self.env_Path = []
-        while index < len(all_path):
-            flow_path = []
-            for i in range(3):
-                path = all_path.iloc[index + i,:]
-                path = np.asarray(path)-1
-                flow_path.append(path[path!=-1])
-            index += 3
-            self.env_Path.append(flow_path)
+    # def read_path(self):
+    #     all_path = pd.read_csv( self.path_file , header=None, sep=',')
+    #     index = 0
+    #     self.env_Path = []
+    #     while index < len(all_path):
+    #         flow_path = []
+    #         for i in range(3):
+    #             path = all_path.iloc[index + i,:]
+    #             path = np.asarray(path)-1
+    #             flow_path.append(path[path!=-1])
+    #         index += 3
+    #         self.env_Path.append(flow_path)
     
 
     def read_path_choice(self):
@@ -308,15 +308,15 @@ class OmnetLinkweightEnv():
 
     def set_env_R_K(self,k=3):
         '''拿到每条流得到的path集合'''
-        self.read_path()
-        # sour_des = self.env_T[:,1:3]
-        # all_path = []
-        # for x in sour_des:
-        #     s = int(x[0])
-        #     d = int(x[1])
-        #     (length, path) = k_shortest_paths(self.graph.copy(), s, d, k)
-        #     all_path.append(path)
-        # self.env_Path = all_path
+        # self.read_path() 
+        sour_des = self.env_T[:,1:3]
+        all_path = []
+        for x in sour_des:
+            s = int(x[0])
+            d = int(x[1])
+            (length, path) = k_shortest_paths(self.graph.copy(), s, d, k)
+            all_path.append(path)
+        self.env_Path = all_path
         
        
 
@@ -327,7 +327,10 @@ class OmnetLinkweightEnv():
         '''
         self.upd_env_R()
         routing_ports = np.full([self.ACTIVE_NODES]*2, -1.0, dtype=int)
+        # print(choice)
+        # print(self.env_Path[flow_id])
         path = self.env_Path[flow_id][choice]
+        # print('self.env_Path',len(self.env_Path))
         self.env_path_set.append(path)
         path_o_ports = []
         s = path[0]
@@ -546,14 +549,17 @@ class OmnetLinkweightEnv():
         self.env_T = np.asarray(self.tgen.generate())
 
         self.env_bw_original = self.env_T[:,3].copy()
-        self.env_Bw = self.read_band().copy()
-        self.env_T[:,3] = self.env_Bw
+        # self.env_Bw = self.read_band().copy()
+        # self.env_T[:,3] = self.env_Bw
+        self.env_Bw = self.env_T[:,4]
+        self.env_T[:,3]= self.env_Bw
+        
 
         vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
         self.set_env_R_K(3)
 
-        # self.env_chocie = np.random.randint(low=0,high=4,size=1)
-        self.env_choice = self.read_path_choice()
+        self.env_chocie = np.random.randint(low=0,high=4,size=1)
+        # self.env_choice = self.read_path_choice()
         self.env_flow_R = []
         tforR1 = time.time()
         self.chose_all_flow_path_set = []
@@ -592,9 +598,9 @@ class OmnetLinkweightEnv():
         print('reset-reward',self.reward)
 
         # 前面的都作废
-        self.env_Bw = self.env_T[:,4]
+        # self.env_Bw = self.env_T[:,4]
         # self.env_Bw = self.genRandomBand()
-        # self.env_T[:,3] = self.env_Bw
+        self.env_T[:,3] = self.env_Bw
 
         return rl_state(self) # if STATUM==T, return self.env_S 
     

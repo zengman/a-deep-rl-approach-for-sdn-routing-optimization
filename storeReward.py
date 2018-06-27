@@ -67,7 +67,7 @@ for i in range(len(server_flow)):
     #datastore[flownum].append(avg)
     if os.path.exists(rewardstorefolder) == False:
         os.makedirs(rewardstorefolder) 
-    with open(rewardstorefolder+flownum+'.txt', 'a') as f:
+    with open(rewardstorefolder+flownum+'.txt', 'w') as f:
         f.write(str(avg) +'\n')
 # data = pd.DataFrame(datastore)
 
