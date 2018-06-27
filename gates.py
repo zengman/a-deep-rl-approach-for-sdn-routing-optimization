@@ -57,9 +57,9 @@ def genFlowsCSV(folder,node,flow_num,csvname):
             cnt += 1
         
 
-    df = np.random.randint(70,80,size=[flow_num,1])
+    df = np.random.randint(0,3,size=[flow_num,1])
     # 3 step 生成Df, 中间差值不要超过5
-    Df = np.random.randint(1,10, size=[flow_num,1]) + df
+    Df = np.random.randint(1,15, size=[flow_num,1]) + df
     #字典中的key值即为csv中列名
     columns = ['src','dest','df','DF']
     dataframe = pd.DataFrame({'DF':Df[:,0],'dest':src_dest[:,1],'df':df[:,0],'src':src_dest[:,0] })
@@ -67,7 +67,7 @@ def genFlowsCSV(folder,node,flow_num,csvname):
     # dataframe.to_csv(filename,index=False,sep=',',header=False,columns=columns)
     dataframe.to_csv(csvname,index=False,sep=',',header=False,columns=columns)
     
-# genFlowsCSV(mainfolder, node, flow_num,'test.csv')
+genFlowsCSV(mainfolder, node, flow_num,'test.csv')
 
     
 

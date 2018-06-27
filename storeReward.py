@@ -54,7 +54,7 @@ leng = int(len(server_flow)/10)
 for i in range(len(server_flow)):
     ffile = server_flow[i]
     reward = get_reward(dirname+'/'+ffile+"/")
-    print(np.max(reward))
+    
     avg = np.max(reward)
     # if ffile == 't1530021443995106_Mat1_flow_num_40':
         # print(reward)
@@ -62,6 +62,7 @@ for i in range(len(server_flow)):
     start = ffile.find('m_') + 2
     end = len(ffile)
     flownum =ffile[start:end]
+    print(flownum, avg)
     # print(flownum)
     #datastore[flownum].append(avg)
     if os.path.exists(rewardstorefolder) == False:

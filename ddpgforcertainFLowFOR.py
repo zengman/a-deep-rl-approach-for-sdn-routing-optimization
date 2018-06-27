@@ -275,8 +275,8 @@ def main_play_after(flow_num, tag, flowfile):
             # here remove double slash at end if present
         experiment = sys.argv[1] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
         DDPG_config['EXPERIMENT'] = experiment
-        # DDPG_config['HIDDEN1_UNITS'] = flow_num*8*
-        # DDPG_config['HIDDEN2_UNITS'] = flow_num*4
+        DDPG_config['HIDDEN1_UNITS'] = 100 + (flow_num-5)*10
+        DDPG_config['HIDDEN2_UNITS'] = 100 + (flow_num-5)*10
         folder = playGame(DDPG_config,flowfile, train_indicator=0)
     
 

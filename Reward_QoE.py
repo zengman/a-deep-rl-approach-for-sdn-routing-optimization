@@ -101,8 +101,8 @@ def reward_QoE(x1,x2,x3,x4, model, data_mean, data_std):
     data_state = pd.DataFrame([b], columns= feature, index=['0'])
     reward = NN_pridict(data_state, model, data_mean, data_std)
     # reward = lossreward(x4, reward)
-    print('reward')
-    print(reward)
+    # print('reward')
+    # print(reward)
     # zhognweishu = np.median(reward)
     # print('中位数:=', zhognweishu)
 

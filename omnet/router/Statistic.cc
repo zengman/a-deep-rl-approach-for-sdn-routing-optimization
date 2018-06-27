@@ -345,11 +345,10 @@ void Statistic::printStats(simtime_t timet) {
            if (numPackets == 0)
                if (src == dst)
                    features.push_back(-1);
-               else if(trafficlist[i][3] == 0){
+               else{
                    features.push_back(0);
-               }else{
-                   features.push_back(std::numeric_limits<double>::infinity());
-               }
+                }
+              
            else
                features.push_back(d/numPackets);
 //       }
@@ -363,7 +362,7 @@ void Statistic::printStats(simtime_t timet) {
     myfile_delay.open (filename, ios::out | ios::trunc );
     for (unsigned int i = 0; i < features.size(); i++ ) {
         double d = features[i];
-        d = d * 1000 * 10 ; // delay 的延迟时间单位是秒， 写入时，转换为毫秒
+        d = d * 1000  ; // delay 的延迟时间单位是秒， 写入时，转换为毫秒
         myfile_delay  << d << ",";
     }
     myfile_delay << endl;
@@ -424,11 +423,9 @@ void Statistic::printStats(simtime_t timet) {
         if (numPackets == 0){
             if (src == dst)
                 features3.push_back(-1);
-            else if(trafficlist[i][3] == 0){
+            else {
                 features3.push_back(0);
             }
-            else
-                features3.push_back(std::numeric_limits<double>::infinity());
             continue;
         }
         for(int k=0; k<numPackets-1; k++){

@@ -108,14 +108,14 @@ def rl_state(env):
         # tm = matrix_to_rl(tm)
         temp = np.concatenate((
             (softmax(env.env_Bw)), \
-            (MaxMinNormalization(env.env_D)),\
-            (MaxMinNormalization(env.env_J)),\
+            (MaxMinNormalization(env.env_D,'d')),\
+            (MaxMinNormalization(env.env_J,'j')),\
             (env.env_L)\
             
         ))
         print(temp.shape[0])
         # print(temp.shape[1])
-        print(temp)
+        # print(temp)
         temp =  np.asarray((temp))
         # tm = tm.reshape(env.flow_num, 1)
         # size = tm.shape[0]
@@ -242,6 +242,7 @@ class OmnetLinkweightEnv():
         
         self.tgen = Traffic(self.ACTIVE_NODES, self.TRAFFIC, capacity, self.flow_num, flowfile)
         self.path_file = flowfile.replace('flows','path')
+        self.path_choose_file = flowfile.replace('flows','path_chosen_thr')
         self.CLUSTER = DDPG_config['CLUSTER'] if 'CLUSTER' in DDPG_config.keys() else False
         self.env_T = np.full((self.flow_num, 5), -1.0, dtype=int)
         # self.env_T = np.full([self.ACTIVE_NODES]*2, -1.0, dtype=float)  # traffic
@@ -289,7 +290,21 @@ class OmnetLinkweightEnv():
                 flow_path.append(path[path!=-1])
             index += 3
             self.env_Path.append(flow_path)
-        
+    
+
+    def read_path_choice(self):
+        choice  = pd.read_csv(self.path_choose_file, header=None, sep=',')# 第id行数据
+        result = []
+        id = int(self.flow_num/5)-1
+        for i in range(self.flow_num):
+            
+            path_id = choice.iloc[id][i]-1 # indix 从0开始
+            path_id = (path_id - i*3 )% 3
+            print(path_id)
+            result.append(path_id)
+
+           
+        return result
 
     def set_env_R_K(self,k=3):
         '''拿到每条流得到的path集合'''
@@ -513,6 +528,7 @@ class OmnetLinkweightEnv():
         t = np.asarray(t[:self.flow_num])
         # print(t)
         return t
+   
 
     def reset(self, easy=False,):
         
@@ -536,7 +552,8 @@ class OmnetLinkweightEnv():
         vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
         self.set_env_R_K(3)
 
-        self.env_chocie = np.random.randint(low=0,high=4,size=1)
+        # self.env_chocie = np.random.randint(low=0,high=4,size=1)
+        self.env_choice = self.read_path_choice()
         self.env_flow_R = []
         tforR1 = time.time()
         self.chose_all_flow_path_set = []
@@ -636,7 +653,7 @@ class OmnetLinkweightEnv():
         # print('action',action)
         # self.upd_env_W(action[:self.graph.number_of_edges()]) # 特殊函数处理过后的概率数字作为weights
         bd = action[:self.flow_num]
-        print('bd',bd)
+        # print('bd',bd)
         # self.env_bw_original = bd
         self.upd_env_Bw(bd) # update Bandwidth
         self.upd_env_T_tr(self.env_Bw)

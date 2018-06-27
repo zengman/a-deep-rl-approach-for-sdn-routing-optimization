@@ -177,7 +177,13 @@ def Normalizing(x, Max, Min):
     x = (x - Min) / (Max - Min)
     return x
 
-def MaxMinNormalization(array):  
+def MaxMinNormalization(array, type):  
+    # if type == 'd':
+    #     Max = 50000
+    #     Min = 0
+    # else:
+    #     Max = 20000
+    #     Min = 0
     Max = np.max(array)
     Min = np.min(array)
     new_array = [Normalizing(x, Max, Min) for x in array]

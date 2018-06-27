@@ -1,7 +1,7 @@
 {
     "ACTIVE_NODES": 35,
     "ACTUM": "NEW",
-    "BATCH_SIZE": 40,
+    "BATCH_SIZE": 32,
     "BN": "reward",
     "BUFFER_SIZE": 1600,
     "ENV": "label",
