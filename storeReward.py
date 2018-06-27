@@ -54,7 +54,11 @@ leng = int(len(server_flow)/10)
 for i in range(len(server_flow)):
     ffile = server_flow[i]
     reward = get_reward(dirname+'/'+ffile+"/")
-    avg = np.mean(reward[-100:])
+    print(np.max(reward))
+    avg = np.max(reward)
+    # if ffile == 't1530021443995106_Mat1_flow_num_40':
+        # print(reward)
+        # print('avg',avg)
     start = ffile.find('m_') + 2
     end = len(ffile)
     flownum =ffile[start:end]

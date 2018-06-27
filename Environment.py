@@ -8,12 +8,14 @@ from scipy import stats
 import subprocess
 import networkx as nx
 import pandas as pd
-
+import sklearn.preprocessing
 from helper import pretty, softmax, MaxMinNormalization
+from keras.utils import np_utils
+
 from Traffic import Traffic
 from K_shortest_path import k_shortest_paths
-# from Reward_QoE import reward_QoE ,NN_training
-from newrewardQoe import reward_QoE
+from Reward_QoE import reward_QoE ,NN_training,testmodel
+# from newrewardQoe import reward_QoE
 import time
 from genLinkBand import getlinkuiti
 OMTRAFFIC = 'Traffic.txt'
@@ -102,14 +104,26 @@ def rl_state(env):
         # env.upd_env_S()
         # return matrix_to_rl(env.env_S)
        
-        tm = softmax(env.env_Bw)
-        tm = matrix_to_rl(tm)
+        # tm = softmax(env.env_Bw)
+        # tm = matrix_to_rl(tm)
+        temp = np.concatenate((
+            (softmax(env.env_Bw)), \
+            (MaxMinNormalization(env.env_D)),\
+            (MaxMinNormalization(env.env_J)),\
+            (env.env_L)\
+            
+        ))
+        print(temp.shape[0])
+        # print(temp.shape[1])
+        print(temp)
+        temp =  np.asarray((temp))
         # tm = tm.reshape(env.flow_num, 1)
         # size = tm.shape[0]
-        print(tm)
+        # print(tm)
         # print(tm.shape[1])
         # print()
-        return tm
+       
+        return temp
         # temp = np.asarray(MaxMinNormalization(matrix_to_rl(env.env_Bw)))
         # temp = np.concatenate((
         #     MaxMinNormalization(matrix_to_rl(env.env_Bw)), \
@@ -211,7 +225,7 @@ class OmnetLinkweightEnv():
         self.ports = np.loadtxt(ports, dtype=int)
         self.flow_num = DDPG_config['FLOW_NUM']
         # self.a_dim = self.graph.number_of_edges() 
-        self.a_dim  = self.flow_num*2
+        self.a_dim  = self.flow_num*4
         # counts the total number of edges in the graph:
 
         # self.s_dim = self.ACTIVE_NODES**2 - self.ACTIVE_NODES    # traffic minus diagonal
@@ -403,18 +417,20 @@ class OmnetLinkweightEnv():
         self.env_S[:,1] = self.env_D # delay
         self.env_S[:,3] = self.env_J # jitter
         self.env_S[:,2] = self.env_L # loss
-        
+    
+
     def upd_env_choice(self, vector):
         # 根据 action 
         choice = np.full(self.flow_num, 0, dtype=int)
         for i in range(self.flow_num):
-            x = vector[i]
-            if x >= 0 and x < (1/3):
-                choice[i] = 0
-            elif x >= (1/3) and x < (2/3):
-                choice[i] = 1
-            else: 
-                choice[i] = 2
+            path = list(vector[i*3 : (i+1)*3])
+            # print(path)
+            # print(max(path))
+            choice[i] = path.index(max(path))
+            
+
+
+        # input()
         self.env_choice = np.asarray(choice)
             
 
@@ -490,6 +506,13 @@ class OmnetLinkweightEnv():
             file.write(','.join(path))
             file.write('\n')
             
+    def read_band(self):
+        band = pd.read_csv('data_new_multi/Mat1/bw_thr_Mat1.csv', header=None, sep=',')
+        index_id = int(self.flow_num / 5 - 1 )
+        t = band.iloc[index_id]
+        t = np.asarray(t[:self.flow_num])
+        # print(t)
+        return t
 
     def reset(self, easy=False,):
         
@@ -497,7 +520,7 @@ class OmnetLinkweightEnv():
             return None
         # self.logheader()
         # routing
-        # self.model, self.data_mean, self.data_std = NN_training()
+        self.model, self.data_mean, self.data_std = testmodel()
         self.upd_env_W(np.full([self.a_dim], 0.05, dtype=float)) 
         # if self.ACTUM == 'DELTA':
         #     vector_to_file(matrix_to_omnet_v(self.env_R), self.folder + OMROUTING, 'w')
@@ -505,26 +528,12 @@ class OmnetLinkweightEnv():
         
         # traffic
         self.env_T = np.asarray(self.tgen.generate())
-        self.env_Bw = self.env_T[:,3]
-        # #-----------------------------
-        # # 设置很好的初始解
-        # band = [5,64.0771,71,75,71.6548,71,77,77.1484,76,69.4056]
-        # Df = band.copy()
-        # df = band.copy()
-        # for i in range(10):
-        #     Df[i] = band[i] + 3
-        #     df[i] = band[i] -3 
-        # df = np.asarray(df)
-        # Df = np.asarray(Df)
-        # self.env_Bw = df.copy()
-        # self.env_T[:,3] = df.copy()
-        # self.env_T[:,4] = Df.copy()
-        # print(self.env_Bw)
-        # #-----------------------------
-        self.env_bw_original = self.env_Bw.copy()
-        temp_t = self.env_T.copy()
-        temp_t[:,3] = self.env_T[:,4]
-        vector_to_file(matrix_to_omnet_v(temp_t), self.folder + OMTRAFFIC, 'w')
+
+        self.env_bw_original = self.env_T[:,3].copy()
+        self.env_Bw = self.read_band().copy()
+        self.env_T[:,3] = self.env_Bw
+
+        vector_to_file(matrix_to_omnet_v(self.env_T), self.folder + OMTRAFFIC, 'w')
         self.set_env_R_K(3)
 
         self.env_chocie = np.random.randint(low=0,high=4,size=1)
@@ -561,16 +570,25 @@ class OmnetLinkweightEnv():
         self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
         self.my_log_header()
         self.log_everything()
-        # self.reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
-        self.reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
+        self.reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
+        # self.reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
         print('reset-reward',self.reward)
 
         # 前面的都作废
         self.env_Bw = self.env_T[:,4]
+        # self.env_Bw = self.genRandomBand()
+        # self.env_T[:,3] = self.env_Bw
 
         return rl_state(self) # if STATUM==T, return self.env_S 
     
-    
+    def genRandomBand(self):
+        a = np.random.rand(1, self.flow_num)
+        b = (self.env_T[:,4] - self.env_T[:,3]).copy()
+        df = self.env_T[:,3].copy()
+        band = b * a + df
+        return np.asarray(band)
+
+        
 
     def test(self,model, data_mean, data_std):
         while True:
@@ -611,16 +629,21 @@ class OmnetLinkweightEnv():
             # print(reward)
 
     def step(self, action):
+        '''
+        根据action得到 计算得到相应的带宽和路径，进入omnet中验证，得到一个新的reward值和state(放入随机的bandwidth)
+        '''
         self.counter += 1
-        print('action',action)
+        # print('action',action)
         # self.upd_env_W(action[:self.graph.number_of_edges()]) # 特殊函数处理过后的概率数字作为weights
-        bd = action[self.flow_num:]
+        bd = action[:self.flow_num]
         print('bd',bd)
         # self.env_bw_original = bd
         self.upd_env_Bw(bd) # update Bandwidth
         self.upd_env_T_tr(self.env_Bw)
+        
+
         vector_to_file(matrix_to_log_v(self.env_Bw), self.folder + 'bandwidth_store.txt','a')
-        self.upd_env_choice(action[:self.flow_num])
+        self.upd_env_choice(action[self.flow_num:])
         # self.env_choice = [0,0,0,0,1]
         print('choice :', self.env_choice)
 
@@ -666,20 +689,28 @@ class OmnetLinkweightEnv():
        
         # self.upd_env_S()
         
-        # reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
-        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
+        reward = reward_QoE(self.env_Bw, self.env_D, self.env_J, self.env_L, self.model, self.data_mean, self.data_std)
+        # reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
         vector_to_file(matrix_to_log_v(self.env_D), self.folder + 'Dealy_store.txt','a')
         # vector_to_file(matrix_to_log_v(self.env_W), self.folder + 'weights.csv','a')
         vector_to_file(matrix_to_log_v(self.env_J), self.folder + 'Jitter_store.txt','a')
         vector_to_file(matrix_to_log_v(self.env_L), self.folder + 'loss_store.txt','a')
-        new_state = rl_state(self) 
+        # 生成下一组的带宽值
 
-        self.log_everything()
+        # self.env_Bw = self.genRandomBand()
+        # self.env_T[:,3] = self.env_Bw.copy()
+        
+        new_state = rl_state(self)   # 根据bandwith来得到新的state
+
+        # self.log_everything()
         # return new status and reward
         # reward * 100 突出分数
+         
+        
         self.reward = reward
+       
 
         # self.test( self.model, self.data_mean, self.data_std)
         return new_state, reward, 0

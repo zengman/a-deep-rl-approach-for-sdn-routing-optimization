@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt  
 import seaborn as sns  
 import pandas as pd
-tips = pd.read_csv('tips.csv')  
-sns.set(style="ticks")                                     #设置主题  
-sns.boxplot(x="day", y="total_bill", hue="sex", data=tips, palette="PRGn")   #palette 调色板  
-plt.show()  
+import numpy as np
+filename = 'rewardLog.txt'
+folder = 'runs//t1530066583454230_Mat1_flow_num_5/'
+df = pd.read_csv(folder +filename, header=None, sep=',')
+print(np.max(df))
+print(np.mean(df))

@@ -15,6 +15,13 @@ def file_name(file_dir):
         return dirs #当前路径下所有子目录  
         # return files #当前路径下所有非目录子文件
 # atype = sys.argv[1]
+def filelsit(file_dir):
+    for root, dirs, files in os.walk(file_dir):  
+        # print(root) #当前目录路径  
+        # return dirs #当前路径下所有子目录  
+        return files #当前路径下所有非目录子文件
+# atype = sys.argv[1]
+
 filename = 'rewardLog.txt'
 mainfolder = sys.argv[1] + '/'
 namelist = file_name(mainfolder)
@@ -30,6 +37,13 @@ def get_reward(atype,namelist, type):
 
 ygu_list = get_reward('u',namelist, 'uuuu')
 ytu_list  = get_reward('t', namelist, 'ttt')
+drl_list = []
+drlfolder = sys.argv[2] + '/'
+flist = filelsit(drlfolder)
+for f in flist:
+    df = pd.read_csv( drlfolder + f, header = None, sep=',')
+    drl_list.append(np.max(df))
+
 # folderg = './topo/germany50/fd'
 # ygt_list = get_reward('t',folderg)
 # foldert = './topo/ta2/fd'
@@ -42,6 +56,7 @@ ytu_list  = get_reward('t', namelist, 'ttt')
 # yt_list = [4.74265766, 4.73842144, 4.70539904, 4.7169137, 4.7180481, 4.71508884, 4.71711493, 4.72274113, 4.72540665, 4.71796036]
 # yu_list = [4.74265766, 4.73571253, 4.71229267, 4.71198416, 4.71785021, 4.71164083, 4.71827602, 4.71713877, 4.72053671, 4.72319841]
 # india35
+
 ydrl_i_list = []
 ydrl_i_list.append(4.80013351095) # 5
 ydrl_i_list.append(4.780445357475)  # 10
@@ -101,7 +116,7 @@ ydiff_t_list = []
 plt.figure(figsize=(10, 7))
 line1 = plt.plot(x_list, ygu_list, linestyle=':' , marker='v',color="black", linewidth=2.3, label='uu')
 line2 = plt.plot(x_list, ytu_list, linestyle='--', marker='d',color="blue", linewidth=2.3, label='tt ')
-# line3 = plt.plot(x_list, ydiff_t_list, linestyle='-', marker='o',color="green", linewidth=2.3, label='ta2')
+line3 = plt.plot(x_list, drl_list, linestyle='-', marker='o',color="green", linewidth=2.3, label='drl')
 
 plt.xlabel("Number of Flows",fontsize=15)
 plt.ylabel("MOS Improvement ",fontsize=15)

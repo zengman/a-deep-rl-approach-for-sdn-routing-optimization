@@ -39,7 +39,7 @@ def get_reward(filename):
         rewardlist.append(x[0])
     # print(rewardlist)
     return rewardlist
-
+    
 def get_ut_reward(folder,data):
     dirs = file_dir(folder)
     if dirs == None:
@@ -93,7 +93,8 @@ data['reward'] = []
 # print(datastore)
 dirname = sys.argv[1]
 drlreward(data, dirname)
-utrewarddata(data)
+# utrewarddata(data)
+# get_ut_reward('Mat03',data)
 # print(data)
 sns.set(style="ticks")
 save = pd.DataFrame(data,columns=['flow_num','type','reward'])

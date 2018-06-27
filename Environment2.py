@@ -17,8 +17,8 @@ import time
 from helper import pretty, softmax, MaxMinNormalization
 from Traffic import Traffic
 from K_shortest_path import k_shortest_paths
-# from Reward_QoE import reward_QoE ,NN_training
-from newrewardQoe import reward_QoE
+from Reward_QoE import reward_QoE ,NN_training,testmodel
+# from newrewardQoe import reward_QoE
 from other_action import OtherAction
 from helper import setup_exp, setup_run, parser, pretty, scale
 
@@ -207,7 +207,7 @@ class OmnetLinkweightEnv():
             file.write(','.join(path))
             file.write('\n')
 
-    def other_up(self,flow_num):
+    def other_up(self,flow_num, model, data_mean, data_std):
         self.flow_num = flow_num
         self.otheraction = OtherAction(self.altype,self.flow_num,self.choice_id, self.sort) # 第一组数据
         path_chose = self.otheraction.read_path_choice() # 得到选择的路径
@@ -217,7 +217,7 @@ class OmnetLinkweightEnv():
         # self.env_W = self.otheraction.read_weight()
         # self.env_T = np.full((self.flow_num, 5), -1.0, dtype=int)
         self.env_T = self.otheraction.csv_traffic()
-        print('tttt',self.env_T)
+        # print('tttt',self.env_T)
         print('ebdbd')
         
         self.env_T[:,3] = self.otheraction.read_band()
@@ -251,8 +251,8 @@ class OmnetLinkweightEnv():
         self.upd_env_J(csv_to_vector(om_output_jitter, 0, self.flow_num))
         self.env_Bw = csv_to_vector(om_output_bandwidth, 0, self.flow_num)
 
-        # reward = reward_QoE(self.env_Bw, self.env_D,self.env_J,self.env_L, model, data_mean, data_std)
-        reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
+        reward = reward_QoE(self.env_Bw, self.env_D,self.env_J,self.env_L, model, data_mean, data_std)
+        # reward = reward_QoE(self.flow_num, self.env_Bw, self.env_D, self.env_J, self.env_L, self.env_T)
         
         # log everything to file
         vector_to_file([reward], self.folder + REWARDLOG, 'a') # 将-reward 写入 rewardLog.csv
@@ -352,7 +352,7 @@ def omnetReward(mainfolder, sort):
     with open('DDPG.json') as jconfig:
         DDPG_config = json.load(jconfig)
         DDPG_config['EXPERIMENT'] = setup_exp()
-    # model, data_mean, data_std = NN_training()
+    model, data_mean, data_std = testmodel()
     # 5，10，15，20，25，30，35，40，45， 50 ,共10次， 
     # 放在每个不同的folder中,后缀表示算法的不同， 中间数字表示流的个数
 
@@ -371,7 +371,7 @@ def omnetReward(mainfolder, sort):
             # flow_num = DDPG_config['FLOW_NUM']
             ifile.write('**.flow_num = ' + str(env.flow_num) + '\n')
         env.folder = folder
-        env.other_up(env.flow_num)
+        env.other_up(env.flow_num,model, data_mean, data_std)
         env.altype = 1
         folder = mainfolder+epoch.replace('.', '')+'_'+str((i+1)*5)+"_uuuu/"
         os.makedirs(folder, exist_ok=True)
@@ -381,7 +381,7 @@ def omnetReward(mainfolder, sort):
             # flow_num = DDPG_config['FLOW_NUM']
             ifile.write('**.flow_num = ' + str(env.flow_num) + '\n')
         env.folder = folder
-        env.other_up(env.flow_num)
+        env.other_up(env.flow_num,model, data_mean, data_std)
         print('ss ok')
 
 

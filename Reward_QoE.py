@@ -2,19 +2,20 @@ import pandas as pd
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 import numpy as np
-
+inputfile = 'NN.xlsx'   #excel输入
 def NN_training():
     #1 数据输入
-    inputfile = 'mos3.xlsx'   #excel输入
+    global inputfile
+    # inputfile = 'NN.xlsx'   #excel输入
     # outputfile = 'output.xls' #excel输出
-    modelfile = 'modelweight2.model' #神经网络权重保存
+    modelfile = 'modelweight.model' #神经网络权重保存
     data = pd.read_excel(inputfile,index='Date',sheet_name=0) #pandas以DataFrame的格式读入excel表
     feature = ['F1','F2','F3','F4'] #影响因素四个
     label = ['L1'] #标签一个，即需要进行预测的值
     # row_len = data.index
     # print(row_len)
     
-    # data_train = data.loc[range(0,520)].copy() #标明excel表从第0行到520行是训练集3000
+    # data_train = data.loc[range(0,3000)].copy() #标明excel表从第0行到520行是训练集3000
     data_train = data.copy()
 
     #2 数据预处理和标注
@@ -26,16 +27,40 @@ def NN_training():
 
     #3 建立一个简单BP神经网络模型
     model = Sequential()  #层次模型
-    model.add(Dense(12,input_dim=4,init='uniform')) #输入层，Dense表示BP层
+    model.add(Dense(12,input_dim=4,init='uniform')) # 输入层，Dense表示BP层
     model.add(Activation('relu'))  #添加激活函数
     model.add(Dense(12,input_dim=12,init='uniform')) #输入层，Dense表示BP层
     model.add(Activation('relu'))  #添加激活函数
     model.add(Dense(1,input_dim=12))  #输出层
     model.compile(loss='mean_squared_error', optimizer='sgd')
     # optimizer='adma') #编译模型
-    model.fit(x_train, y_train, nb_epoch = 1000, batch_size = 32) #训练模型1000次
+    model.fit(x_train, y_train, nb_epoch = 600, batch_size = 32) #训练模型1000次
     model.save_weights(modelfile) #保存模型权重
+    # model.save_weights()
     return model, data_mean, data_std
+
+def testmodel():
+    global inputfile
+    modelfile = 'modelweight.model' #神经网络权重保存
+    model = Sequential()  #层次模型
+    model.add(Dense(12,input_dim=4,init='uniform')) # 输入层，Dense表示BP层
+    model.add(Activation('relu'))  #添加激活函数
+    model.add(Dense(12,input_dim=12,init='uniform')) #输入层，Dense表示BP层
+    model.add(Activation('relu'))  #添加激活函数
+    model.add(Dense(1,input_dim=12))  #输出层
+    model.compile(loss='mean_squared_error', optimizer='sgd')
+    model.load_weights(modelfile)
+
+    data = pd.read_excel(inputfile,index='Date',sheet_name=0) #pandas以DataFrame的格式读入excel表
+    # data_train = data.loc[range(0,3000)].copy() #标明excel表从第0行到520行是训练集3000
+    data_train = data.copy()
+
+    #2 数据预处理和标注
+    data_mean = data_train.mean()  
+    data_std = data_train.std()  
+
+    return model, data_mean, data_std
+
 
 def NN_pridict(data, model, data_mean, data_std):
     feature = ['F1','F2','F3','F4'] 
@@ -99,3 +124,5 @@ def reward_QoE(x1,x2,x3,x4, model, data_mean, data_std):
 # import matplotlib.pyplot as plt 
 # p = data[['L1','L1_pred']].plot(subplots = True, style=['b-o','r-*'])
 # plt.show()
+
+# NN_training()

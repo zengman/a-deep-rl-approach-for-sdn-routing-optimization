@@ -10,7 +10,7 @@ import sys
 '''
 # folder = 'runs//t1529463641183343/' # 标记这个文件！！！！
 # ----------------------------
-folder = 'runs//t1529564305948923/'
+folder = 'runs//t1530018189590626_Mat1_flow_num_15/'
 # folder = '' 
 # atype = sys.argv[1]
 filename = 'rewardLog.txt'

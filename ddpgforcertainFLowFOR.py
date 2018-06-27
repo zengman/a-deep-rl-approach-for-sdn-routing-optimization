@@ -194,8 +194,10 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
                 critic.target_train()
                 with open(folder + 'lossLog.txt', 'a') as file:
                     file.write(pretty(loss) + '\n')
-            print("every step Reward", "%.8f" % r_t)
+            
             total_reward += r_t
+            if i>0:
+                print("目前的平均  Reward", "%.8f" % total_reward/i)
             s_t = s_t1
             # print('begin layer')
 
@@ -230,18 +232,18 @@ def playGame(DDPG_config, flowfile, train_indicator=1):    #1 means Train, 0 mea
             if done or wise:
                 break
 
-        # if np.mod((i+1), 1) == 0:   # writes at every  episode
-        #     if (train_indicator):
-        #         actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
-        #         actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
-        #         with open(folder + "actormodel.json", "w") as outfile:
-        #             outfile.write(actor.model.to_json(indent=4) + '\n')
+        if np.mod((i+1), 1) == 0:   # writes at every  episode
+            if (train_indicator):
+                actor.model.save_weights(folder + "actormodel.h5", overwrite=True)
+                actor.model.save_weights(folder + "actormodel" + str(step) + ".h5")
+                with open(folder + "actormodel.json", "w") as outfile:
+                    outfile.write(actor.model.to_json(indent=4) + '\n')
 
-        #         critic.model.save_weights(folder + "criticmodel.h5", overwrite=True)
-        #         critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
-        #         with open(folder + "criticmodel.json", "w") as outfile:
-        #             outfile.write(critic.model.to_json(indent=4) + '\n')
-        #         all_print(folder)
+                critic.model.save_weights(folder + "criticmodel.h5", overwrite=True)
+                critic.model.save_weights(folder + "criticmodel" + str(step) + ".h5")
+                with open(folder + "criticmodel.json", "w") as outfile:
+                    outfile.write(critic.model.to_json(indent=4) + '\n')
+                all_print(folder)
         allreward += total_reward
         print("TOTAL REWARD @ " + str(i) + "-th Episode  : Reward " + str(total_reward))
         print("Total Step: " + str(step))
@@ -266,13 +268,17 @@ def main_play(flow_num, tag,flowfile):
     folder = playGame(DDPG_config,flowfile, train_indicator=1)
     return folder
 
-# def main_play_after(flow_num, tag, flowfile):
-#         with open(sys.argv[3] + '/' + 'DDPG.json') as jconfig:
-#             DDPG_config = json.load(jconfig)
-#             # here remove double slash at end if present
-#         experiment = sys.argv[1] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
-#         DDPG_config['EXPERIMENT'] = experiment
-#         folder = playGame(DDPG_config,flowfile, train_indicator=0)
+def main_play_after(flow_num, tag, flowfile):
+    if len(sys.argv) > 3:
+        with open(sys.argv[3] + '/' + 'DDPG.json') as jconfig:
+            DDPG_config = json.load(jconfig)
+            # here remove double slash at end if present
+        experiment = sys.argv[1] if sys.argv[2][-1] == '/' else sys.argv[2] + '/'
+        DDPG_config['EXPERIMENT'] = experiment
+        # DDPG_config['HIDDEN1_UNITS'] = flow_num*8*
+        # DDPG_config['HIDDEN2_UNITS'] = flow_num*4
+        folder = playGame(DDPG_config,flowfile, train_indicator=0)
+    
 
 def file_name(file_dir): 
 
@@ -290,6 +296,7 @@ flownum = int(sys.argv[2])
 iddd = sys.argv[1]
 flow_file = flowmainfolder + 'Mat'+iddd+ '/flows_Mat'+ iddd + '.csv'
 main_play(flownum, 'Mat'+sys.argv[1], flow_file)
+# main_play_after(flownum,'Mat' + sys.argv[1], flow_file)
 
     
 # start = int(sys.argv[1])
